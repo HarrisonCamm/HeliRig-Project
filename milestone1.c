@@ -192,7 +192,8 @@ main(void)
 {
     uint16_t i;
     int32_t sum;
-    uint16_t rnd_mean_buffer;
+    uint16_t rndMeanBuf;
+    uint16_t initLandedADC;
 
     initClock ();
     initADC ();
@@ -202,6 +203,15 @@ main(void)
     //
     // Enable interrupts to the processor.
     IntMasterEnable();
+
+    SysCtlDelay (SysCtlClockGet() / 6);  // Wait for buffer to populate
+
+    sum = 0;
+    for (i = 0; i < BUF_SIZE; i++)
+        sum = sum + readCircBuf (&g_inBuffer);
+
+    // Calculate and display the rounded mean of the buffer contents
+    initLandedADC = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
 
     while (1)
     {
@@ -213,9 +223,9 @@ main(void)
             sum = sum + readCircBuf (&g_inBuffer);
 
         // Calculate and display the rounded mean of the buffer contents
+        rndMeanBuf = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
 
-
-        displayMeanVal ((2 * sum + BUF_SIZE) / 2 / BUF_SIZE, g_ulSampCnt);
+        displayMeanVal (rndMeanBuf, initLandedADC);
 
         displayAltitude();
 
