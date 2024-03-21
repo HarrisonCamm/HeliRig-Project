@@ -72,7 +72,7 @@ initADC (void)
     // sequence 0 has 8 programmable steps.  Since we are only doing a single
     // conversion using sequence 3 we will only configure step 0.  For more
     // on the ADC sequences and steps, refer to the LM3S1968 datasheet.
-    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH9 | ADC_CTL_IE |
+    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH0 | ADC_CTL_IE |
                              ADC_CTL_END);
 
     //
@@ -162,27 +162,36 @@ displayMeanVal(uint16_t meanVal, uint32_t count)
 
 void displayAltitude(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle) {
 
-
     // Calculate the altitude as a percentage (integer math)
     int32_t delta = baseAltitude - currentMean; // Difference from the baseline
     int32_t altitudePercentage = (delta * 100) / ADC_STEP_FOR_1V; // Scale before division
     
+
     char string[17]; // 16 characters across the display
     if (displayCycle == 0) {
+        // Display ADC input as a height percentage
         usnprintf(string, sizeof(string), "Altitude: %3d%%", altitudePercentage);
-    } else {
-        // Display the mean ADC value when not showing percentage
+        OLEDStringDraw ("Helicopter ADC", 0, 0);
+        OLEDStringDraw (string, 0, 1);
+
+    } else if (displayCycle == 1) {
+        // Display the mean ADC value
         usnprintf(string, sizeof(string), "Mean ADC: %4d", currentMean);
+        OLEDStringDraw ("Helicopter ADC", 0, 0);
+        OLEDStringDraw (string, 0, 1);
+
+    } else {
+        // Clear display
+        OrbitOledClear();
     }
-    // Clear the previous display and show the new string
-    OLEDStringDraw ("                ", 0, 2); // Clear the previous line
-    OLEDStringDraw (string, 0, 2);
+
 }
 
 
 uint16_t updateBufMean (void) {
+    uint16_t i;
     uint32_t sum = 0;
-    for (int i = 0; i < BUF_SIZE; i++) {
+    for (i = 0; i < BUF_SIZE; i++) {
         sum += readCircBuf(&g_inBuffer);
     }
     uint16_t currentMean = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
@@ -193,8 +202,7 @@ uint16_t updateBufMean (void) {
 int
 main(void)
 {
-    uint16_t i;
-    uint16_t rndMeanBuf;
+    uint16_t currentMean;
     uint16_t initLandedADC;
 
     initClock ();
@@ -217,13 +225,13 @@ main(void)
         //
         // Background task: calculate the (approximate) mean of the values in the
 
-        rndMeanBuf = updateBufMean();
+        currentMean = updateBufMean();
 
 
 
         //displayMeanVal (rndMeanBuf, initLandedADC);
 
-        displayAltitude(initLandedADC, rndMeanBuf, 0);
+        displayAltitude(initLandedADC, currentMean, 0);
 
 
         SysCtlDelay (SysCtlClockGet() / 100);  // Update display at ~ 2 Hz
