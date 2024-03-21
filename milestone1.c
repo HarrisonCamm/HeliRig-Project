@@ -159,15 +159,15 @@ displayMeanVal(uint16_t meanVal, uint32_t count)
 }
 
 
-void displayAltitude(void) {
+void displayAltitude(uint16_t baseAltitude, ) {
     uint32_t sum = 0;
     for (int i = 0; i < BUF_SIZE; i++) {
         sum += readCircBuf(&g_inBuffer);
     }
-    uint32_t currentMean = sum / BUF_SIZE;
+    uint32_t currentMean = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
     
     // Calculate the altitude as a percentage (integer math)
-    int32_t delta = g_ulBaseAltitude - currentMean; // Difference from the baseline
+    int32_t delta = baseAltitude - currentMean; // Difference from the baseline
     int32_t altitudePercentage = (delta * 100) / ADC_STEP_FOR_1V; // Scale before division
     
     // Ensure the percentage is within bounds
@@ -184,6 +184,11 @@ void displayAltitude(void) {
     // Clear the previous display and show the new string
     OLEDStringDraw ("                ", 0, 2); // Clear the previous line
     OLEDStringDraw (string, 0, 2);
+}
+
+
+uint16_t updateBufMean (void) {
+
 }
 
 
@@ -217,15 +222,9 @@ main(void)
     {
         //
         // Background task: calculate the (approximate) mean of the values in the
-        // circular buffer and display it, together with the sample number.
-        sum = 0;
-        for (i = 0; i < BUF_SIZE; i++)
-            sum = sum + readCircBuf (&g_inBuffer);
 
-        // Calculate and display the rounded mean of the buffer contents
-        rndMeanBuf = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
 
-        displayMeanVal (rndMeanBuf, initLandedADC);
+        //displayMeanVal (rndMeanBuf, initLandedADC);
 
         displayAltitude();
 
