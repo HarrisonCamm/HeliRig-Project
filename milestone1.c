@@ -35,6 +35,8 @@ static uint32_t g_ulSampCnt;
 
 
 
+
+
 void
 ADCIntHandler(void)
 {
@@ -199,6 +201,11 @@ uint16_t updateBufMean (void) {
     uint16_t currentMean = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
     return currentMean;
 }
+
+
+
+
+
 
 
 int
