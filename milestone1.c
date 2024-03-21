@@ -26,6 +26,7 @@
 
 #define BUF_SIZE 60
 #define SAMPLE_RATE_HZ 500
+#define ADC_STEP_FOR_1V 1240;
 
 static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
 static uint32_t g_ulSampCnt;
@@ -159,23 +160,15 @@ displayMeanVal(uint16_t meanVal, uint32_t count)
 }
 
 
-void displayAltitude(uint16_t baseAltitude, ) {
-    uint32_t sum = 0;
-    for (int i = 0; i < BUF_SIZE; i++) {
-        sum += readCircBuf(&g_inBuffer);
-    }
-    uint32_t currentMean = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-    
+void displayAltitude(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle) {
+
+
     // Calculate the altitude as a percentage (integer math)
     int32_t delta = baseAltitude - currentMean; // Difference from the baseline
     int32_t altitudePercentage = (delta * 100) / ADC_STEP_FOR_1V; // Scale before division
     
-    // Ensure the percentage is within bounds
-    if (altitudePercentage < 0) altitudePercentage = 0;
-    if (altitudePercentage > 100) altitudePercentage = 100;
-    
     char string[17]; // 16 characters across the display
-    if (g_displayAsPercentage) {
+    if (displayCycle == 0) {
         usnprintf(string, sizeof(string), "Altitude: %3d%%", altitudePercentage);
     } else {
         // Display the mean ADC value when not showing percentage
@@ -188,7 +181,12 @@ void displayAltitude(uint16_t baseAltitude, ) {
 
 
 uint16_t updateBufMean (void) {
-
+    uint32_t sum = 0;
+    for (int i = 0; i < BUF_SIZE; i++) {
+        sum += readCircBuf(&g_inBuffer);
+    }
+    uint16_t currentMean = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+    return currentMean;
 }
 
 
@@ -196,7 +194,6 @@ int
 main(void)
 {
     uint16_t i;
-    int32_t sum;
     uint16_t rndMeanBuf;
     uint16_t initLandedADC;
 
@@ -211,22 +208,22 @@ main(void)
 
     SysCtlDelay (SysCtlClockGet() / 6);  // Wait for buffer to populate
 
-    sum = 0;
-    for (i = 0; i < BUF_SIZE; i++)
-        sum = sum + readCircBuf (&g_inBuffer);
-
+    
     // Calculate and display the rounded mean of the buffer contents
-    initLandedADC = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+    initLandedADC = updateBufMean();
 
     while (1)
     {
         //
         // Background task: calculate the (approximate) mean of the values in the
 
+        rndMeanBuf = updateBufMean();
+
+
 
         //displayMeanVal (rndMeanBuf, initLandedADC);
 
-        displayAltitude();
+        displayAltitude(initLandedADC, rndMeanBuf, 0);
 
 
         SysCtlDelay (SysCtlClockGet() / 100);  // Update display at ~ 2 Hz
