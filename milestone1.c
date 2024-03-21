@@ -217,7 +217,7 @@ main(void)
 
         displayMeanVal ((2 * sum + BUF_SIZE) / 2 / BUF_SIZE, g_ulSampCnt);
 
-
+        displayAltitude();
 
 
         SysCtlDelay (SysCtlClockGet() / 100);  // Update display at ~ 2 Hz
