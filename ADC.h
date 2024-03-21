@@ -23,6 +23,8 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
+#define BUF_SIZE 60
+#define SAMPLE_RATE_HZ 500
 
 
 
@@ -39,5 +41,8 @@ void ADCIntHandler(void);
 
 void initADC (void);
 
+uint16_t updateBufMean (void);
+
+void SysTickIntHandler(void);
 
 #endif /* ADC_H_ */
