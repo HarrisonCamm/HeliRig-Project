@@ -6,6 +6,24 @@
  */
 
 
+#include <stdint.h>
+#include <stdbool.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/adc.h"
+#include "driverlib/pwm.h"
+#include "driverlib/gpio.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/systick.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/debug.h"
+#include "utils/ustdlib.h"
+#include "OrbitOLED/OrbitOLEDInterface.h"
+
+#include "ADC.h"
+
+
+
 
 //*****************************************************************************
 //
@@ -22,28 +40,6 @@ SysTickIntHandler(void)
     g_ulSampCnt++;
 }
 
-//*****************************************************************************
-//
-// The handler for the ADC conversion complete interrupt.
-// Writes to the circular buffer.
-//
-//*****************************************************************************
-void
-ADCIntHandler(void)
-{
-    uint32_t ulValue;
-
-    //
-    // Get the single sample from ADC0.  ADC_BASE is defined in
-    // inc/hw_memmap.h
-    ADCSequenceDataGet(ADC0_BASE, 3, &ulValue);
-    //
-    // Place it in the circular buffer (advancing write index)
-    writeCircBuf (&g_inBuffer, ulValue);
-    //
-    // Clean up, clearing the interrupt
-    ADCIntClear(ADC0_BASE, 3);
-}
 
 //*****************************************************************************
 // Initialisation functions for the clock (incl. SysTick), ADC, display
@@ -66,10 +62,6 @@ initClock (void)
     SysTickIntEnable();
     SysTickEnable();
 }
-
-
-
-
 
 
 void
@@ -101,3 +93,32 @@ displayMeanVal(uint16_t meanVal, uint32_t count)
     OLEDStringDraw (string, 0, 3);
 }
 
+int
+main(void)
+{
+    uint16_t i;
+    int32_t sum;
+
+    initClock ();
+    initADC ();
+    initDisplay ();
+    initCircBuf (&g_inBuffer, BUF_SIZE);
+
+    //
+    // Enable interrupts to the processor.
+    IntMasterEnable();
+
+    while (1)
+    {
+        //
+        // Background task: calculate the (approximate) mean of the values in the
+        // circular buffer and display it, together with the sample number.
+        sum = 0;
+        for (i = 0; i < BUF_SIZE; i++)
+            sum = sum + readCircBuf (&g_inBuffer);
+        // Calculate and display the rounded mean of the buffer contents
+        displayMeanVal ((2 * sum + BUF_SIZE) / 2 / BUF_SIZE, g_ulSampCnt);
+
+        SysCtlDelay (SysCtlClockGet() / 100);  // Update display at ~ 2 Hz
+    }
+}
