@@ -20,6 +20,8 @@
 #include "utils/ustdlib.h"
 #include "circBufT.h"
 #include "OrbitOLED/OrbitOLEDInterface.h"
+#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
+#include "buttons4.h"
 
 //#include "ADC.h"
 
@@ -206,6 +208,7 @@ main(void)
     uint16_t initLandedADC;
 
     initClock ();
+    initButtons();
     initADC ();
     initDisplay ();
     initCircBuf (&g_inBuffer, BUF_SIZE);
@@ -222,11 +225,15 @@ main(void)
 
     while (1)
     {
+        updateButtons();
         //
         // Background task: calculate the (approximate) mean of the values in the
 
         currentMean = updateBufMean();
 
+        if (checkButton(LEFT)) {
+            initLandedADC = currentMean;
+        }
 
 
         //displayMeanVal (rndMeanBuf, initLandedADC);
