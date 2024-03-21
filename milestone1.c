@@ -34,9 +34,6 @@ static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample 
 static uint32_t g_ulSampCnt;
 
 enum DisplayMode { PERCENTAGE_ALTITUDE, MEAN_ADC, DISPLAY_OFF };
-static enum DisplayMode displayCycle = PERCENTAGE_ALTITUDE;
-
-
 
 
 void
@@ -78,7 +75,7 @@ initADC (void)
     // sequence 0 has 8 programmable steps.  Since we are only doing a single
     // conversion using sequence 3 we will only configure step 0.  For more
     // on the ADC sequences and steps, refer to the LM3S1968 datasheet.
-    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH0 | ADC_CTL_IE |
+    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH9 | ADC_CTL_IE |
                              ADC_CTL_END);
 
     //
@@ -215,7 +212,7 @@ main(void)
 {
     uint16_t currentMean;
     uint16_t initLandedADC;
-    DisplayMode displayCycle = PERCENTAGE_ALTITUDE; 
+    enum DisplayMode displayCycle = PERCENTAGE_ALTITUDE;
 
     initClock ();
     initButtons();
@@ -241,17 +238,17 @@ main(void)
 
         currentMean = updateBufMean();
 
-        if (checkButton(LEFT)) {
+        if (checkButton(LEFT) == PUSHED) {
             initLandedADC = currentMean;
         }
 
 
         //displayMeanVal (rndMeanBuf, initLandedADC);
 
-        if (checkButton(UP)) {
+        if (checkButton(UP) == PUSHED) {
             displayCycle += 1;
             if (displayCycle == 3) {
-                displayCycle = 0;
+                displayCycle = PERCENTAGE_ALTITUDE;
             }
         }
 
