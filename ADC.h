@@ -23,15 +23,13 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define BUF_SIZE 60
-#define SAMPLE_RATE_HZ 500
+
 
 
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
-static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
-static uint32_t g_ulSampCnt;    // Counter for the interrupts
+    // Counter for the interrupts
 
 
 #ifndef ADC_H_
