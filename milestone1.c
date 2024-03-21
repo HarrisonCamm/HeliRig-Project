@@ -33,6 +33,8 @@
 static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
 static uint32_t g_ulSampCnt;
 
+enum DisplayMode { PERCENTAGE_ALTITUDE, MEAN_ADC, DISPLAY_OFF };
+static enum DisplayMode displayCycle = PERCENTAGE_ALTITUDE;
 
 
 
@@ -172,13 +174,13 @@ void displayAltitude(uint16_t baseAltitude, uint16_t currentMean, uint8_t displa
     
 
     char string[17]; // 16 characters across the display
-    if (displayCycle == 0) {
+    if (displayCycle == PERCENTAGE_ALTITUDE) {
         // Display ADC input as a height percentage
         usnprintf(string, sizeof(string), "Altitude: %3d%%", altitudePercentage);
         OLEDStringDraw ("Helicopter ADC", 0, 0);
         OLEDStringDraw (string, 0, 1);
 
-    } else if (displayCycle == 1) {
+    } else if (displayCycle == MEAN_ADC) {
         // Display the mean ADC value
         usnprintf(string, sizeof(string), "Mean ADC: %4d", currentMean);
         OLEDStringDraw ("Helicopter ADC", 0, 0);
@@ -213,6 +215,7 @@ main(void)
 {
     uint16_t currentMean;
     uint16_t initLandedADC;
+    DisplayMode displayCycle = PERCENTAGE_ALTITUDE; 
 
     initClock ();
     initButtons();
@@ -245,7 +248,15 @@ main(void)
 
         //displayMeanVal (rndMeanBuf, initLandedADC);
 
-        displayAltitude(initLandedADC, currentMean, 0);
+        if (checkButton(UP)) {
+            displayCycle += 1;
+            if (displayCycle == 3) {
+                displayCycle = 0;
+            }
+        }
+
+        displayAltitude(initLandedADC, currentMean, displayCycle);
+
 
 
         SysCtlDelay (SysCtlClockGet() / 100);  // Update display at ~ 2 Hz
