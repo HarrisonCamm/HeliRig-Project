@@ -56,7 +56,7 @@ main(void)
     uint16_t currentAlt;
     int32_t currentYaw;
     uint16_t initLandedADC;
-    enum DisplayMode displayCycle = PERCENTAGE_ALTITUDE;
+    enum DisplayMode displayCycle = PROCESSED;
 
     initClock ();
     initButtons();
@@ -92,13 +92,13 @@ main(void)
         if (checkButton(UP) == PUSHED) {
             displayCycle += 1;
             if (displayCycle == 3) {
-                displayCycle = PERCENTAGE_ALTITUDE;
+                displayCycle = PROCESSED;
             }
         }
 
 
         // Refresh the display
-        displayWrite(initLandedADC, currentAlt, displayCycle);
+        displayWrite(initLandedADC, currentAlt, currentYaw, displayCycle);
 
 
         SysCtlDelay (SysCtlClockGet() / 100);  // Delay to prevent flickering

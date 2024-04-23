@@ -21,6 +21,7 @@
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 
 #define ADC_STEP_FOR_1V 1240;
+#define YAW_STEPS 448;
 
 enum DisplayMode { PROCESSED, RAW, DISPLAY_OFF };
 
@@ -29,9 +30,11 @@ enum DisplayMode { PROCESSED, RAW, DISPLAY_OFF };
 
 
 
-void displayWrite(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle);
+void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uint8_t displayCycle);
 
-void displayMeanVal(uint16_t meanVal, uint32_t count);
+int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude);
+
+int32_t getYawDegree(int32_t currentYaw);
 
 void initDisplay (void);
 

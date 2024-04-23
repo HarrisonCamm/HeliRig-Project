@@ -8,25 +8,36 @@
 #include "Display.h"
 
 
-void displayWrite(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle) {
+void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uint8_t displayCycle) {
 
-    // Calculate the altitude as a percentage (integer math)
-    int32_t delta = baseAltitude - currentMean; // Difference from the baseline
-    int32_t altitudePercentage = (delta * 100) / ADC_STEP_FOR_1V; // Scale before division
+    // Get Altitude as a percentage
+    int32_t altPercentage = getAltPercent(baseAlt, currentAlt);
+
+    // Get yaw as a degree
+    int32_t yawDegree = getYawDegree(currentYaw);
 
 
-    char string[17]; // 16 characters across the display
+    char lineString[17]; // 16 characters across the display
     if (displayCycle == PROCESSED) {
+        OLEDStringDraw ("Helicopter Stats", 0, 0);
+
         // Display ADC input as a height percentage
-        usnprintf(string, sizeof(string), "Altitude: %3d%% ", altitudePercentage);
-        OLEDStringDraw ("Helicopter ADC", 0, 0);
-        OLEDStringDraw (string, 0, 1);
+        usnprintf(lineString, sizeof(lineString), "Altitude: %3d%% ", altPercentage);
+        OLEDStringDraw (lineString, 0, 1);
+
+        // Display YAW is degrees
+        usnprintf(lineString, sizeof(lineString), "Yaw: %4d  ", yawDegree);
+        OLEDStringDraw (lineString, 0, 2);
+
 
     } else if (displayCycle == RAW) {
+        OLEDStringDraw ("Helicopter Stats", 0, 0);
+
         // Display the mean ADC value
-        usnprintf(string, sizeof(string), "Mean ADC: %4d ", currentMean);
-        OLEDStringDraw ("Helicopter ADC", 0, 0);
-        OLEDStringDraw (string, 0, 1);
+        usnprintf(lineString, sizeof(lineString), "Mean ADC: %4d ", currentAlt);
+        OLEDStringDraw (lineString, 0, 1);
+        //Clear Yaw line
+        OLEDStringDraw ("                ", 0, 2);
 
     } else {
         // Clear display
@@ -35,13 +46,36 @@ void displayWrite(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCy
 
 }
 
+int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
+{
+    // Calculate the altitude as a percentage (integer math)
+    int32_t delta = baseAltitude - altitude; // Difference from the baseline
+    int32_t altPercentage = (delta * 100) / ADC_STEP_FOR_1V; // Scale before division
 
+    return altPercentage;
+}
+
+int32_t getYawDegree(int32_t currentYaw)
+{
+    return (currentYaw * 360) / YAW_STEPS;
+}
+
+
+void
+initDisplay (void)
+{
+    // intialise the Orbit OLED display
+    OLEDInitialise ();
+}
+
+
+//OLD FUNCTIONS
 //*****************************************************************************
 //
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //
 //*****************************************************************************
-void
+/*void
 displayMeanVal(uint16_t meanVal, uint32_t count)
 {
     char string[17];  // 16 characters across the display
@@ -56,15 +90,6 @@ displayMeanVal(uint16_t meanVal, uint32_t count)
 
     usnprintf (string, sizeof(string), "Sample # %5d", count);
     OLEDStringDraw (string, 0, 3);
-}
+}*/
 
-
-
-
-void
-initDisplay (void)
-{
-    // intialise the Orbit OLED display
-    OLEDInitialise ();
-}
 

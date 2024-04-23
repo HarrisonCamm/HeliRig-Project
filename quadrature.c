@@ -14,16 +14,13 @@ void initQuad (void)
 {
     SysCtlPeripheralEnable (SYSCTL_PERIPH_GPIOB);
 
+    GPIOIntRegister(GPIO_PORTB_BASE, GPIOYawHandler);
+
     GPIOPinTypeGPIOInput (GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
-    GPIOPadConfigSet (GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
-
-
-    GPIOIntRegisterPin(GPIO_PORTB_BASE, GPIO_PIN_0, GPIOYawHandler);
-    GPIOIntRegisterPin(GPIO_PORTB_BASE, GPIO_PIN_1, GPIOYawHandler);
 
     GPIOIntTypeSet(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1, GPIO_BOTH_EDGES);
 
-    GPIOIntEnable(GPIO_PORTB_BASE, GPIO_INT_PIN_0 | GPIO_INT_PIN_1);
+    GPIOIntEnable(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
 
 }
@@ -58,14 +55,15 @@ void GPIOYawHandler(void)
         ((last_state == 0x01) && (state == 0x03)) ||  // Transition from 01 to 11
         ((last_state == 0x03) && (state == 0x02)) ||  // Transition from 11 to 10
         ((last_state == 0x02) && (state == 0x00))) {  // Transition from 10 to 00
-        // Clockwise rotation: increment yaw position
-        yaw_position++;
-    } else {
         // Counter-clockwise rotation: decrement yaw position
         yaw_position--;
+    } else {
+        // Clockwise rotation: Increment yaw position
+        yaw_position++;
     }
 
     // Update last_state to the current state for the next interrupt
     last_state = state;
+
 }
 
