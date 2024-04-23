@@ -17,23 +17,20 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/debug.h"
 #include "utils/ustdlib.h"
-#include "OrbitOLED/OrbitOLEDInterface.h"
-#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
-
-#define ADC_STEP_FOR_1V 1240;
-
-enum DisplayMode { PROCESSED, RAW, DISPLAY_OFF };
-
-#ifndef DISPLAY_H_
-#define DISPLAY_H_
 
 
 
-void displayWrite(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle);
 
-void displayMeanVal(uint16_t meanVal, uint32_t count);
+#ifndef QUADRATURE_H_
+#define QUADRATURE_H_
 
-void initDisplay (void);
+
+void initQuad (void);
+
+int32_t getYawPosition (void);
+
+void GPIOYawHandler (void);
+
 
 
 #endif /* DISPLAY_H_ */

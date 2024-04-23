@@ -75,7 +75,7 @@ ADCIntHandler(void)
 }
 
 
-uint16_t updateBufMean (void) {
+uint16_t getAltMean (void) {
     uint16_t i;
     uint32_t sum = 0;
     for (i = 0; i < BUF_SIZE; i++) {

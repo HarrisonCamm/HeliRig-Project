@@ -8,7 +8,7 @@
 #include "Display.h"
 
 
-void displayAltitude(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle) {
+void displayWrite(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle) {
 
     // Calculate the altitude as a percentage (integer math)
     int32_t delta = baseAltitude - currentMean; // Difference from the baseline
@@ -16,13 +16,13 @@ void displayAltitude(uint16_t baseAltitude, uint16_t currentMean, uint8_t displa
 
 
     char string[17]; // 16 characters across the display
-    if (displayCycle == PERCENTAGE_ALTITUDE) {
+    if (displayCycle == PROCESSED) {
         // Display ADC input as a height percentage
         usnprintf(string, sizeof(string), "Altitude: %3d%% ", altitudePercentage);
         OLEDStringDraw ("Helicopter ADC", 0, 0);
         OLEDStringDraw (string, 0, 1);
 
-    } else if (displayCycle == MEAN_ADC) {
+    } else if (displayCycle == RAW) {
         // Display the mean ADC value
         usnprintf(string, sizeof(string), "Mean ADC: %4d ", currentMean);
         OLEDStringDraw ("Helicopter ADC", 0, 0);
