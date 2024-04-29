@@ -28,6 +28,11 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uin
         // Display YAW is degrees
         int32_t yawInt = yawDegree / 100;
         int32_t yawDecimal = yawDegree % 100;
+
+        if (yawDecimal < 0) {
+            yawDecimal *= -1;
+        }
+
         usnprintf(lineString, sizeof(lineString), "Yaw: %d.%d   ", yawInt, yawDecimal);
         OLEDStringDraw (lineString, 0, 2);
 
