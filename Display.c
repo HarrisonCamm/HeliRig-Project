@@ -5,7 +5,7 @@
  *      Author: hrc48
  */
 
-#include "Display.h"
+#include "display.h"
 
 
 void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uint8_t displayCycle) {

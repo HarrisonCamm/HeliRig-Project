@@ -23,7 +23,7 @@
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 #include "buttons4.h"
-#include "Display.h"
+#include "display.h"
 #include "ADC.h"
 #include "quadrature.h"
 
