@@ -16,8 +16,8 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uin
     // Get yaw as a degree
     int32_t yawDegree = getYawDegree(currentYaw);
 
-
     char lineString[17]; // 16 characters across the display
+
     if (displayCycle == PROCESSED) {
         OLEDStringDraw ("Helicopter Stats", 0, 0);
 
@@ -26,7 +26,9 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uin
         OLEDStringDraw (lineString, 0, 1);
 
         // Display YAW is degrees
-        usnprintf(lineString, sizeof(lineString), "Yaw: %4d  ", yawDegree);
+        int32_t yawInt = yawDegree / 100;
+        int32_t yawDecimal = yawDegree % 100;
+        usnprintf(lineString, sizeof(lineString), "Yaw: %d.%d   ", yawInt, yawDecimal);
         OLEDStringDraw (lineString, 0, 2);
 
 
@@ -57,7 +59,7 @@ int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
 
 int32_t getYawDegree(int32_t currentYaw)
 {
-    return (currentYaw * 360) / YAW_STEPS;
+    return (currentYaw * 360 * 100) / YAW_STEPS;;
 }
 
 
