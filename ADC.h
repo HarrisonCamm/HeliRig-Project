@@ -34,7 +34,7 @@ void ADCIntHandler(void);
 
 void initADC (void);
 
-uint16_t updateBufMean (void);
+uint16_t getAltMean (void);
 
 void SysTickIntHandler(void);
 

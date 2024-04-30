@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "driverlib/adc.h"
@@ -22,8 +23,9 @@
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 #include "buttons4.h"
-#include "Display.h"
+#include "display.h"
 #include "ADC.h"
+#include "quadrature.h"
 
 
 
@@ -52,14 +54,16 @@ initClock (void)
 int
 main(void)
 {
-    uint16_t currentMean;
+    uint16_t currentAlt;
+    int32_t currentYaw;
     uint16_t initLandedADC;
-    enum DisplayMode displayCycle = PERCENTAGE_ALTITUDE;
+    enum DisplayMode displayCycle = PROCESSED;
 
     initClock ();
     initButtons();
     initADC ();
     initDisplay ();
+    initQuad();
 
     //
     // Enable interrupts to the processor.
@@ -69,7 +73,7 @@ main(void)
 
     
     // Calculate and display the rounded mean of the buffer contents
-    initLandedADC = updateBufMean();
+    initLandedADC = getAltMean();
 
     while (1)
     {
@@ -77,26 +81,27 @@ main(void)
         //
         // Background task: calculate the (approximate) mean of the values in the
 
-        currentMean = updateBufMean();
+        currentAlt = getAltMean();
+        currentYaw = getYawPosition();
 
+        // Reset Landed ADC value when button pushed
         if (checkButton(LEFT) == PUSHED) {
-            initLandedADC = currentMean;
+            initLandedADC = currentAlt;
         }
 
-
-        //displayMeanVal (rndMeanBuf, initLandedADC);
-
+        // Cycle through display modes when button pushed
         if (checkButton(UP) == PUSHED) {
             displayCycle += 1;
-            if (displayCycle == 3) {
-                displayCycle = PERCENTAGE_ALTITUDE;
+            if (displayCycle == CYCLE_BACK) {
+                displayCycle = PROCESSED;
             }
         }
 
-        displayAltitude(initLandedADC, currentMean, displayCycle);
+
+        // Refresh the display
+        displayWrite(initLandedADC, currentAlt, currentYaw, displayCycle);
 
 
-
-        SysCtlDelay (SysCtlClockGet() / 100);  // Update display at ~ 2 Hz
+        SysCtlDelay (SysCtlClockGet() / 100);  // Delay to prevent flickering
     }
 }

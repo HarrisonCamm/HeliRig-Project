@@ -17,23 +17,20 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/debug.h"
 #include "utils/ustdlib.h"
-#include "OrbitOLED/OrbitOLEDInterface.h"
-#include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 
-#define ADC_STEP_FOR_1V 1240;
-
-enum DisplayMode { PERCENTAGE_ALTITUDE, MEAN_ADC, DISPLAY_OFF };
-
-#ifndef DISPLAY_H_
-#define DISPLAY_H_
+#define WRAPSTEP 224 //Number of quadrature steps  before degrees wrap around at +180 and -180 (448/2)
 
 
+#ifndef QUADRATURE_H_
+#define QUADRATURE_H_
 
-void displayAltitude(uint16_t baseAltitude, uint16_t currentMean, uint8_t displayCycle);
 
-void displayMeanVal(uint16_t meanVal, uint32_t count);
+void initQuad (void);
 
-void initDisplay (void);
+int32_t getYawPosition (void);
+
+void GPIOYawHandler (void);
+
 
 
 #endif /* DISPLAY_H_ */
