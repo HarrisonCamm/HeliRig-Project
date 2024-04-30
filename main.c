@@ -92,7 +92,7 @@ main(void)
         // Cycle through display modes when button pushed
         if (checkButton(UP) == PUSHED) {
             displayCycle += 1;
-            if (displayCycle == 3) {
+            if (displayCycle == CYCLE_BACK) {
                 displayCycle = PROCESSED;
             }
         }
