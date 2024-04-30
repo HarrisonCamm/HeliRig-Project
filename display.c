@@ -33,7 +33,7 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uin
             yawDecimal *= -1;
         }
 
-        usnprintf(lineString, sizeof(lineString), "Yaw: %d.%d   ", yawInt, yawDecimal);
+        usnprintf(lineString, sizeof(lineString), "Yaw: %d.%d deg   ", yawInt, yawDecimal);
         OLEDStringDraw (lineString, 0, 2);
 
 
