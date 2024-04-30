@@ -7,7 +7,7 @@
 
 #include "quadrature.h"
 
-static volatile int32_t yaw_position = 0;
+static volatile int32_t yawPosition = 0;
 
 
 void initQuad (void)
@@ -27,7 +27,13 @@ void initQuad (void)
 
 int32_t getYawPosition (void)
 {
-    return yaw_position;
+    if (yawPosition > WRAPSTEP) {
+        yawPosition = -WRAPSTEP + (yawPosition - WRAPSTEP);
+    }
+    if (yawPosition < -WRAPSTEP) {
+        yawPosition = WRAPSTEP - (yawPosition + WRAPSTEP);
+    }
+    return yawPosition;
 }
 
 
@@ -56,10 +62,10 @@ void GPIOYawHandler(void)
         ((last_state == 0x03) && (state == 0x02)) ||  // Transition from 11 to 10
         ((last_state == 0x02) && (state == 0x00))) {  // Transition from 10 to 00
         // Counter-clockwise rotation: decrement yaw position
-        yaw_position--;
+        yawPosition--;
     } else {
         // Clockwise rotation: Increment yaw position
-        yaw_position++;
+        yawPosition++;
     }
 
     // Update last_state to the current state for the next interrupt

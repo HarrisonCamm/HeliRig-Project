@@ -33,7 +33,7 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, uin
             yawDecimal *= -1;
         }
 
-        usnprintf(lineString, sizeof(lineString), "Yaw: %d.%d deg   ", yawInt, yawDecimal);
+        usnprintf(lineString, sizeof(lineString), "Yaw(deg):%d.%d   ", yawInt, yawDecimal);
         OLEDStringDraw (lineString, 0, 2);
 
 
@@ -57,7 +57,7 @@ int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
 {
     // Calculate the altitude as a percentage (integer math)
     int32_t delta = baseAltitude - altitude; // Difference from the baseline
-    int32_t altPercentage = (delta * 100) / ADC_STEP_FOR_1V; // Scale before division
+    int32_t altPercentage = (delta * 100) / ADC_STEP_FOR_1V; // Scale by 100 before division to include 2 decimal point for modulo division
 
     return altPercentage;
 }

@@ -18,7 +18,7 @@
 #include "driverlib/debug.h"
 #include "utils/ustdlib.h"
 
-
+#define WRAPSTEP 224 //Number of quadrature steps  before degrees wrap around at +180 and -180 (448/2)
 
 
 #ifndef QUADRATURE_H_
