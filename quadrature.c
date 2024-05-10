@@ -27,12 +27,6 @@ void initQuad (void)
 
 int32_t getYawPosition (void)
 {
-    if (yawPosition > WRAPSTEP) {
-        yawPosition = -WRAPSTEP + (yawPosition - WRAPSTEP);
-    }
-    if (yawPosition < -WRAPSTEP) {
-        yawPosition = WRAPSTEP - (yawPosition + WRAPSTEP);
-    }
     return yawPosition;
 }
 
@@ -66,6 +60,15 @@ void GPIOYawHandler(void)
     } else {
         // Clockwise rotation: Increment yaw position
         yawPosition++;
+    }
+
+
+    // Handle wrap around at 180 degrees
+    if (yawPosition > WRAPSTEP) {
+        yawPosition = -WRAPSTEP + (yawPosition - WRAPSTEP);
+    }
+    if (yawPosition < -WRAPSTEP) {
+        yawPosition = WRAPSTEP - (yawPosition + WRAPSTEP);
     }
 
     // Update last_state to the current state for the next interrupt

@@ -8,8 +8,10 @@
 #include <pwmRotor.h>
 
 
-//System clock
-static uint32_t sysClock = SysCtlClockGet();
+static float KPMvar = 1;
+
+static int16_t altSetPoint = 0;
+static int16_t yawSetPoint = 0;
 
 /*********************************************************
  * initialisePWM
@@ -19,6 +21,9 @@ static uint32_t sysClock = SysCtlClockGet();
 void
 initialisePWM (void)
 {
+    //System clock
+    uint32_t sysClock = SysCtlClockGet();
+
     //init main
     SysCtlPeripheralEnable(PWM_MAIN_PERIPH_PWM);
     SysCtlPeripheralEnable(PWM_MAIN_PERIPH_GPIO);
@@ -70,6 +75,11 @@ initialisePWM (void)
 void
 setDUTY (uint32_t mainDuty, uint32_t tailDuty)
 {
+    //System clock
+    static uint32_t sysClock = 0;
+    if (sysClock == 0) {
+        sysClock = SysCtlClockGet();
+    }
     // Calculate the PWM period corresponding to the freq.
     uint32_t ui32PeriodMain = sysClock / PWM_DIVIDER / PWM_MAIN_FREQ;
 
@@ -86,19 +96,18 @@ setDUTY (uint32_t mainDuty, uint32_t tailDuty)
  * PID controller function for main rotor, returns a duty cycle %
  ********************************************************/
 
-uint32_t
-controllerMain (float target, float sensor) {
+int32_t
+controllerMain (uint16_t sensor) {
     static float dI = 0;
-    static float prevSensor = 0;
+    static uint16_t prevSensor = 0;
 
-    float error = target - sensor;
-    float P = KPM * error;
+    float error = altSetPoint - sensor;
+    float P = KPMvar * error;
     float I = KIM * error * DELTA_T;
     float D = KDM * (prevSensor - sensor) / DELTA_T;
 
-    //?? possibly need gravity in here
 
-    float control = P + (dI + I) + D;
+    int32_t control = P + (dI + I) + D + GRAVITY;
 
     if (control > PWM_DUTY_MAX) {
         control = PWM_DUTY_MAX;
@@ -107,6 +116,7 @@ controllerMain (float target, float sensor) {
     } else {
         I = I + dI;
     }
+    prevSensor = sensor;
     return control;
 }
 
@@ -115,19 +125,19 @@ controllerMain (float target, float sensor) {
  * PID controller function for tail rotor, returns a duty cycle %
  ********************************************************/
 
-uint32_t
-controllerTail (float target, float sensor) {
+int32_t
+controllerTail (int32_t mainControl, int16_t sensor) {
     static float dI = 0;
-    static float prevSensor = 0;
+    static int16_t prevSensor = 0;
 
-    float error = target - sensor;
+    float error = yawSetPoint - sensor;
     float P = KPT * error;
     float I = KIT * error * DELTA_T;
     float D = KDT * (prevSensor - sensor) / DELTA_T;
 
-    //?? possibly need gravity in here
+    float coupling = mainControl * KC;
 
-    float control = P + (dI + I) + D;
+    int32_t control = P + (dI + I) + D + coupling;
 
     if (control > PWM_DUTY_MAX) {
         control = PWM_DUTY_MAX;
@@ -136,10 +146,51 @@ controllerTail (float target, float sensor) {
     } else {
         I = I + dI;
     }
+
+    prevSensor = sensor;
     return control;
 }
 
+void incKP (void) {
+    KPMvar += 1;
+}
+
+void decKP (void) {
+    KPMvar -= 1;
+}
 
 
+void incAlt (void) {
+    altSetPoint += ALT_STEP;
+    if (altSetPoint > MAX_ALT){
+        altSetPoint = MAX_ALT;
+    }
+}
 
 
+void decAlt (void) {
+    altSetPoint -= ALT_STEP;
+    if (altSetPoint < MIN_ALT){
+        altSetPoint = MIN_ALT;
+    }
+}
+
+
+void incYaw (void) {
+    yawSetPoint += YAW_STEP;
+    //special case
+}
+
+
+void decYaw (void) {
+    yawSetPoint -= YAW_STEP;
+    //special case
+}
+
+int32_t getAltSet (void) {
+    return altSetPoint;
+}
+
+int32_t getYawSet (void) {
+    return yawSetPoint;
+}
