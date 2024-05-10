@@ -17,7 +17,7 @@
 // Constants
 //*****************************************************************************
 #define BUF_SIZE 60
-#define SAMPLE_RATE_HZ 500
+#define SAMPLE_RATE_HZ 1000
 
 
 

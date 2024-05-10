@@ -20,7 +20,9 @@
 #define ALT_STEP 124    // 1240/10  For 10% of 1V step
 #define YAW_STEP 19  //448 *15/360 degrees rounded
 #define GRAVITY 30
-##define KC 0.8
+#define KC 0.8
+
+
 
 //Delta time HZ 100HZ
 #define DELTA_T 0.01 //seconds

@@ -93,17 +93,17 @@ uint16_t getAltMean (void) {
 // The interrupt handler for the for SysTick interrupt.
 //
 //*****************************************************************************
-void
-SysTickIntHandler(void)
-{
-    //
-    // Initiate a conversion
-    //
-    ADCProcessorTrigger(ADC0_BASE, 3);
-    g_ulSampCnt++;
-}
-
-
+//void
+//SysTickIntHandler(void)
+//{
+//    //
+//    // Initiate a conversion
+//    //
+//    ADCProcessorTrigger(ADC0_BASE, 3);
+//    g_ulSampCnt++;
+//}
+//
+//
 
 
 

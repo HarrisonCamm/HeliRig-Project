@@ -26,6 +26,17 @@
 #include "display.h"
 #include "ADC.h"
 #include "quadrature.h"
+#include "pwmRotor.h"
+
+
+//Task flags
+static volatile bool flagController = false;
+static volatile bool flagButtons = false;
+static volatile bool flagDisplay = false;
+
+#define CONTROL_PERIOD 1 //Corrosponds to 1ms
+#define BUTTON_PERIOD 10 //Corrosponds to 10ms
+#define DISPLAY_PERIOD 15 //Corrosponds to 15ms
 
 
 
@@ -51,6 +62,70 @@ initClock (void)
     SysTickEnable();
 }
 
+
+//*****************************************************************************
+//
+// The interrupt handler for the for SysTick interrupt.
+//
+//*****************************************************************************
+void
+SysTickIntHandler(void)
+{
+    static uint8_t controllerCounter = 0;
+    static uint8_t buttonsCounter = 0;
+    static uint8_t displayCounter = 0;
+
+    //
+    // Initiate a conversion
+    //
+    ADCProcessorTrigger(ADC0_BASE, 3);
+
+    if (controllerCounter >= CONTROL_PERIOD) {
+        flagController = true;
+        controllerCounter = 0;
+    }
+
+    if (buttonsCounter >= BUTTON_PERIOD) {
+        flagButtons = true;
+        buttonsCounter = 0;
+    }
+
+    if (displayCounter >= DISPLAY_PERIOD) {
+        flagDisplay = true;
+        displayCounter = 0;
+    }
+
+
+    controllerCounter++;
+    buttonsCounter++;
+    displayCounter++;
+}
+
+void
+poleButtons(uint16_t* initialADC, enum DisplayMode* displayCycle, uint16_t* currentAlt, int32_t* currentYaw) {
+
+    updateButtons();
+    //
+    // Background task: calculate the (approximate) mean of the values in the
+
+    *currentAlt = getAltMean();
+    *currentYaw = getYawPosition();
+
+    // Reset Landed ADC value when button pushed
+    if (checkButton(LEFT) == PUSHED) {
+        *initialADC = *currentAlt;
+    }
+
+    // Cycle through display modes when button pushed
+    if (checkButton(UP) == PUSHED) {
+        *displayCycle += 1;
+        if (*displayCycle == CYCLE_BACK) {
+            *displayCycle = PROCESSED;
+        }
+    }
+}
+
+
 int
 main(void)
 {
@@ -64,6 +139,8 @@ main(void)
     initADC ();
     initDisplay ();
     initQuad();
+    initialisePWM();
+
 
     //
     // Enable interrupts to the processor.
@@ -77,7 +154,23 @@ main(void)
 
     while (1)
     {
-        updateButtons();
+        //Flag Controller
+        if (flagController) {
+
+            flagController = false;
+        }
+        if (flagButtons) {
+            //poleButtons
+            updateButtons();
+            flagButtons = false;
+        }
+        if (flagDisplay) {
+            // Refresh the display
+            displayWrite(initLandedADC, currentAlt, currentYaw, displayCycle);
+            flagButtons = false;
+        }
+
+
         //
         // Background task: calculate the (approximate) mean of the values in the
 
