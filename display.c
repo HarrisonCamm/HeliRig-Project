@@ -70,14 +70,14 @@ int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
 {
     // Calculate the altitude as a percentage (integer math)
     int32_t delta = baseAltitude - altitude; // Difference from the baseline
-    int32_t altPercentage = (delta * SCALE_BY_100) / ADC_STEP_FOR_1V; // Scale by 100 before division to include 2 decimal point for modulo division
+    int32_t altPercentage = (delta * SCALE_BY_100) / ADC_STEP_FOR_1V; //Scale by 100 for percentage
 
     return altPercentage;
 }
 
 int32_t getYawDegree(int32_t currentYaw)
 {
-    return (currentYaw * DEG_REV * SCALE_BY_100) / YAW_STEPS;
+    return (currentYaw * DEG_REV * SCALE_BY_100) / YAW_STEPS; // Scale by 100 before division to include 2 decimal point for modulo division
 }
 
 

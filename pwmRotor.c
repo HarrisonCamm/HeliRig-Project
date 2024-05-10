@@ -7,6 +7,10 @@
 
 #include <pwmRotor.h>
 
+
+//System clock
+static uint32_t sysClock = SysCtlClockGet();
+
 /*********************************************************
  * initialisePWM
  * M0PWM7 (J4-05, PC5) is used for the main rotor motor
@@ -25,7 +29,10 @@ initialisePWM (void)
     PWMGenConfigure(PWM_MAIN_BASE, PWM_MAIN_GEN,
                     PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
     // Set the initial PWM parameters
-    setPWM (PWM_START_RATE_HZ, PWM_START_DUTY);
+    uint32_t ui32Period = sysClock / PWM_DIVIDER / PWM_MAIN_FREQ;
+
+    PWMGenPeriodSet(PWM_MAIN_BASE, PWM_MAIN_GEN, ui32Period);
+    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM, ui32Period * PWM_START_DUTY / 100);
 
     PWMGenEnable(PWM_MAIN_BASE, PWM_MAIN_GEN);
 
@@ -44,12 +51,10 @@ initialisePWM (void)
                     PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
     // Set the initial PWM parameters
     // Calculate the PWM period corresponding to the freq.
-    uint32_t ui32Period =
-        SysCtlClockGet() / PWM_DIVIDER / PWM_TAIL_FREQ;
+    uint32_t ui32PeriodTail = sysClock / PWM_DIVIDER / PWM_TAIL_FREQ;
 
-    PWMGenPeriodSet(PWM_TAIL_BASE, PWM_TAIL_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM,
-        ui32Period * PWM_TAIL_DUTY / 100);
+    PWMGenPeriodSet(PWM_TAIL_BASE, PWM_TAIL_GEN, ui32PeriodTail);
+    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM, ui32PeriodTail * PWM_START_DUTY / 100);
 
 
     PWMGenEnable(PWM_TAIL_BASE, PWM_TAIL_GEN);
@@ -63,23 +68,76 @@ initialisePWM (void)
  * Function to set the freq, duty cycle of M0PWM7
  ********************************************************/
 void
-setPWM (uint32_t ui32Freq, uint32_t ui32Duty)
+setDUTY (uint32_t mainDuty, uint32_t tailDuty)
 {
     // Calculate the PWM period corresponding to the freq.
-    uint32_t ui32Period =
-        SysCtlClockGet() / PWM_DIVIDER / ui32Freq;
+    uint32_t ui32PeriodMain = sysClock / PWM_DIVIDER / PWM_MAIN_FREQ;
 
-    PWMGenPeriodSet(PWM_MAIN_BASE, PWM_MAIN_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM,
-        ui32Period * ui32Duty / 100);
+    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM, ui32PeriodMain * mainDuty / 100);
+
+    uint32_t ui32PeriodTail = sysClock / PWM_DIVIDER / PWM_TAIL_FREQ;
+
+    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM, ui32PeriodTail * tailDuty / 100);
+
 }
 
 
+/********************************************************
+ * PID controller function for main rotor, returns a duty cycle %
+ ********************************************************/
+
+uint32_t
+controllerMain (float target, float sensor) {
+    static float dI = 0;
+    static float prevSensor = 0;
+
+    float error = target - sensor;
+    float P = KPM * error;
+    float I = KIM * error * DELTA_T;
+    float D = KDM * (prevSensor - sensor) / DELTA_T;
+
+    //?? possibly need gravity in here
+
+    float control = P + (dI + I) + D;
+
+    if (control > PWM_DUTY_MAX) {
+        control = PWM_DUTY_MAX;
+    } else if (control < PWM_DUTY_MIN) {
+        control = PWM_DUTY_MIN;
+    } else {
+        I = I + dI;
+    }
+    return control;
+}
 
 
+/********************************************************
+ * PID controller function for tail rotor, returns a duty cycle %
+ ********************************************************/
 
+uint32_t
+controllerTail (float target, float sensor) {
+    static float dI = 0;
+    static float prevSensor = 0;
 
+    float error = target - sensor;
+    float P = KPT * error;
+    float I = KIT * error * DELTA_T;
+    float D = KDT * (prevSensor - sensor) / DELTA_T;
 
+    //?? possibly need gravity in here
+
+    float control = P + (dI + I) + D;
+
+    if (control > PWM_DUTY_MAX) {
+        control = PWM_DUTY_MAX;
+    } else if (control < PWM_DUTY_MIN) {
+        control = PWM_DUTY_MIN;
+    } else {
+        I = I + dI;
+    }
+    return control;
+}
 
 
 

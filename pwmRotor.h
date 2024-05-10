@@ -14,6 +14,17 @@
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 
+// PID config
+//MAIN ROTOR
+#define KPM 1
+#define KIM 1
+#define KDM 1
+
+//TAIL ROTOR
+#define KPT 1
+#define KIT 1
+#define KDT 1
+
 
 // PWM configuration
 #define PWM_START_RATE_HZ  250
@@ -23,7 +34,7 @@
 
 #define PWM_DUTY_MIN    5
 #define PWM_DUTY_MAX    95
-#define PWM_START_DUTY  50
+#define PWM_START_DUTY  5
 #define PWM_DUTY_STEP   5
 
 #define PWM_DIVIDER_CODE   SYSCTL_PWMDIV_4
@@ -40,6 +51,7 @@
 #define PWM_MAIN_GPIO_BASE   GPIO_PORTC_BASE
 #define PWM_MAIN_GPIO_CONFIG GPIO_PC5_M0PWM7
 #define PWM_MAIN_GPIO_PIN    GPIO_PIN_5
+#define PWM_MAIN_FREQ        300
 
 
 //  PWM Hardware Details M1PWM5 (gen 2)
@@ -54,7 +66,6 @@
 #define PWM_TAIL_GPIO_CONFIG GPIO_PF1_M1PWM5
 #define PWM_TAIL_GPIO_PIN    GPIO_PIN_1
 #define PWM_TAIL_FREQ        200
-#define PWM_TAIL_DUTY        10
 
 
 #ifndef PWMROTOR_H_
@@ -64,8 +75,13 @@ void
 initialisePWM (void);
 
 void
-setPWM (uint32_t ui32Freq, uint32_t ui32Duty);
+setDUTY (uint32_t mainDuty, uint32_t tailDuty);
 
+uint32_t
+controllerMain (float target, float sensor);
+
+uint32_t
+controllerTail (float target, float sensor);
 
 
 
