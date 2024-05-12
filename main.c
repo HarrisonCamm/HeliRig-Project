@@ -195,7 +195,7 @@ main(void)
         }
         if (flagButtons) {
             poleButtons();
-            UpdateHelicopter();
+            UpdateHelicopterState();
             flagButtons = false;
         }
         if (flagDisplay) {
