@@ -39,6 +39,8 @@ static volatile bool flagUART = false;
 //********************************************************
 // Global variables
 //********************************************************
+#define MAX_STR_LEN 90
+
 char statusStr[MAX_STR_LEN + 1];
 
 #define CONTROL_PERIOD 1    //Corrosponds to 1000Hz
@@ -199,8 +201,15 @@ main(void)
         }
 
         if (flagUART) {
+
+            int32_t actualAlt = getAltPercent(currentAlt, initLandedADC);
+            int32_t desireAlt = getAltPercent(getAltSet(), initLandedADC);
+
+            int32_t actualYaw = getYawDegree(currentYaw);
+            int32_t desireYaw = getYawDegree(getYawSet());
+
             //Update UART string
-            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d \r\n", currentAlt, currentYaw); // * usprintf
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty);
             UARTSend (statusStr);
 
             flagUART = false;
