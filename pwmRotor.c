@@ -13,6 +13,13 @@ static float KPMvar = 1;
 static int16_t altSetPoint = 0;
 static int16_t yawSetPoint = 0;
 
+// Initialize state
+volatile HelicopterState state = LANDED;
+
+
+
+
+
 /*********************************************************
  * initialisePWM
  * M0PWM7 (J4-05, PC5) is used for the main rotor motor
@@ -69,6 +76,17 @@ initialisePWM (void)
 }
 
 
+void initialiseSwitch (void) {
+    // Enable Peripheral Clocks for GPIO Port A (for PA7)
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+
+    // Configure the GPIO pin for the mode slider switch (PA7)
+    GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_7);
+    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+}
+
+
+
 /********************************************************
  * Function to set the freq, duty cycle of M0PWM7
  ********************************************************/
@@ -118,6 +136,53 @@ controllerMain (uint16_t sensor) {
     }
     prevSensor = sensor;
     return control;
+}
+
+/********************************************************
+ * Function to set the Helicopter state
+ ********************************************************/
+void UpdateHelicopter(void) {
+    static bool prevSwitchState = false;
+    bool currentSwitchState = ReadSwitchState();
+
+    switch (state) {
+        case LANDED:
+            if (!prevSwitchState && currentSwitchState) {
+                state = TAKING_OFF;
+            }
+            break;
+        case TAKING_OFF:
+            // Activate motors to take off
+            // Transition to FLYING after successful takeoff
+            state = FLYING;
+            break;
+        case FLYING:
+            if (!currentSwitchState) {
+                state = LANDING;
+            }
+            break;
+        case LANDING:
+            // Deactivate motors to land
+            // Remain in LANDING until landing is complete
+            if (landingComplete()) {
+                state = LANDED;
+            }
+            break;
+    }
+
+    prevSwitchState = currentSwitchState;
+}
+
+bool ReadSwitchState(void) {
+    // Read the current state of the switch (HIGH = UP)
+    return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
+}
+
+
+bool landingComplete(void) {
+    // Implement logic to check if landing is complete
+    // For simplicity, assume immediate completion for now
+    return true;
 }
 
 

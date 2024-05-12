@@ -163,6 +163,7 @@ main(void)
     initQuad();
     initialisePWM();
     initialiseUSB_UART ();
+    initialiseSwitch ();
 
 
     //
@@ -192,6 +193,7 @@ main(void)
         }
         if (flagButtons) {
             poleButtons();
+            UpdateHelicopter();
             flagButtons = false;
         }
         if (flagDisplay) {
