@@ -32,9 +32,6 @@
 #define UART_USB_GPIO_PINS      UART_USB_GPIO_PIN_RX | UART_USB_GPIO_PIN_TX
 
 
-#define MAX_STR_LEN 16
-
-
 
 #ifndef UART_H_
 #define UART_H_

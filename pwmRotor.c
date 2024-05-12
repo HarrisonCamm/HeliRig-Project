@@ -10,11 +10,14 @@
 
 static float KPMvar = 1;
 
-static int16_t altSetPoint = 0;
+static int16_t altSetPoint = 2900;
 static int16_t yawSetPoint = 0;
 
+static uint16_t MAX_ALT = 0;
+static uint16_t MIN_ALT = 0;
+
 // Initialize state
-volatile HelicopterState state = LANDED;
+static volatile HelicopterState state = LANDED;
 
 
 
@@ -49,7 +52,7 @@ initialisePWM (void)
     PWMGenEnable(PWM_MAIN_BASE, PWM_MAIN_GEN);
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
-    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, false);
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
 
 
     //init Tail
@@ -72,9 +75,8 @@ initialisePWM (void)
     PWMGenEnable(PWM_TAIL_BASE, PWM_TAIL_GEN);
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
-    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
 }
-
 
 void initialiseSwitch (void) {
     // Enable Peripheral Clocks for GPIO Port A (for PA7)
@@ -85,6 +87,11 @@ void initialiseSwitch (void) {
     GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 }
 
+void initAltLimits (uint16_t initLandedADC) {
+    //Initialise min and max ADC heights
+    MIN_ALT = initLandedADC;
+    MAX_ALT = initLandedADC - ADC_STEP_FOR_1V;
+}
 
 
 /********************************************************
@@ -125,7 +132,7 @@ controllerMain (uint16_t sensor) {
     float D = KDM * (prevSensor - sensor) / DELTA_T;
 
 
-    int32_t control = P + (dI + I) + D + GRAVITY;
+    int32_t control = GRAVITY - P - (dI + I) - D;
 
     if (control > PWM_DUTY_MAX) {
         control = PWM_DUTY_MAX;
@@ -137,6 +144,82 @@ controllerMain (uint16_t sensor) {
     prevSensor = sensor;
     return control;
 }
+
+
+/********************************************************
+ * PID controller function for tail rotor, returns a duty cycle %
+ ********************************************************/
+
+int32_t
+controllerTail (int32_t mainControl, int16_t sensor) {
+    static float dI = 0;
+    static int16_t prevSensor = 0;
+
+    float error = yawSetPoint - sensor;
+    float P = KPT * error;
+    float I = KIT * error * DELTA_T;
+    float D = KDT * (prevSensor - sensor) / DELTA_T;
+
+    float coupling = mainControl * KC;
+
+    int32_t control = P + (dI + I) + D + coupling;
+
+    if (control > PWM_DUTY_MAX) {
+        control = PWM_DUTY_MAX;
+    } else if (control < PWM_DUTY_MIN) {
+        control = PWM_DUTY_MIN;
+    } else {
+        I = I + dI;
+    }
+
+    prevSensor = sensor;
+    return control;
+}
+
+void incKP (void) {
+    KPMvar += 1;
+}
+
+void decKP (void) {
+    KPMvar -= 1;
+}
+
+
+void incAlt (void) {
+    altSetPoint -= ALT_STEP;
+    if (altSetPoint < MAX_ALT){
+        altSetPoint = MAX_ALT;
+    }
+}
+
+
+void decAlt (void) {
+    altSetPoint += ALT_STEP;
+    if (altSetPoint > MIN_ALT){
+        altSetPoint = MIN_ALT;
+    }
+}
+
+
+void incYaw (void) {
+    yawSetPoint += YAW_STEP;
+    //special case
+}
+
+
+void decYaw (void) {
+    yawSetPoint -= YAW_STEP;
+    //special case
+}
+
+int32_t getAltSet (void) {
+    return altSetPoint;
+}
+
+int32_t getYawSet (void) {
+    return yawSetPoint;
+}
+
 
 /********************************************************
  * Function to set the Helicopter state
@@ -183,79 +266,4 @@ bool landingComplete(void) {
     // Implement logic to check if landing is complete
     // For simplicity, assume immediate completion for now
     return true;
-}
-
-
-/********************************************************
- * PID controller function for tail rotor, returns a duty cycle %
- ********************************************************/
-
-int32_t
-controllerTail (int32_t mainControl, int16_t sensor) {
-    static float dI = 0;
-    static int16_t prevSensor = 0;
-
-    float error = yawSetPoint - sensor;
-    float P = KPT * error;
-    float I = KIT * error * DELTA_T;
-    float D = KDT * (prevSensor - sensor) / DELTA_T;
-
-    float coupling = mainControl * KC;
-
-    int32_t control = P + (dI + I) + D + coupling;
-
-    if (control > PWM_DUTY_MAX) {
-        control = PWM_DUTY_MAX;
-    } else if (control < PWM_DUTY_MIN) {
-        control = PWM_DUTY_MIN;
-    } else {
-        I = I + dI;
-    }
-
-    prevSensor = sensor;
-    return control;
-}
-
-void incKP (void) {
-    KPMvar += 1;
-}
-
-void decKP (void) {
-    KPMvar -= 1;
-}
-
-
-void incAlt (void) {
-    altSetPoint += ALT_STEP;
-    if (altSetPoint > MAX_ALT){
-        altSetPoint = MAX_ALT;
-    }
-}
-
-
-void decAlt (void) {
-    altSetPoint -= ALT_STEP;
-    if (altSetPoint < MIN_ALT){
-        altSetPoint = MIN_ALT;
-    }
-}
-
-
-void incYaw (void) {
-    yawSetPoint += YAW_STEP;
-    //special case
-}
-
-
-void decYaw (void) {
-    yawSetPoint -= YAW_STEP;
-    //special case
-}
-
-int32_t getAltSet (void) {
-    return altSetPoint;
-}
-
-int32_t getYawSet (void) {
-    return yawSetPoint;
 }

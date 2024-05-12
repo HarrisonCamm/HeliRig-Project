@@ -16,11 +16,10 @@
 #include "driverlib/sysctl.h"
 
 //ALT and YAW
-#define MAX_ALT 100
-#define MIN_ALT 0
-#define ALT_STEP 124    // 1240/10  For 10% of 1V step
+#define ADC_STEP_FOR_1V 1240
+#define ALT_STEP 10 //124    // 1240/10  For 10% of 1V step
 #define YAW_STEP 19  //448 *15/360 degrees rounded
-#define GRAVITY 30
+#define GRAVITY 33
 #define KC 0.8
 
 
@@ -30,12 +29,12 @@
 
 // PID config
 //MAIN ROTOR
-#define KPM 1
+#define KPM 0.01
 #define KIM 0
 #define KDM 0
 
 //TAIL ROTOR
-#define KPT 1
+#define KPT 0.01
 #define KIT 0
 #define KDT 0
 
@@ -82,11 +81,22 @@
 #define PWM_TAIL_FREQ        200
 
 
+// Define states for the helicopter
+typedef enum {
+    LANDED,
+    TAKING_OFF,
+    FLYING,
+    LANDING
+} HelicopterState;
+
+
 #ifndef PWMROTOR_H_
 #define PWMROTOR_H_
 
 void
 initialisePWM (void);
+
+void initAltLimits (uint16_t initLandedADC);
 
 void
 setDuty (uint32_t mainDuty, uint32_t tailDuty);
@@ -120,13 +130,13 @@ int32_t getAltSet (void);
 int32_t getYawSet (void);
 
 
-// Define states for the helicopter
-typedef enum {
-    LANDED,
-    TAKING_OFF,
-    FLYING,
-    LANDING
-} HelicopterState;
+bool landingComplete(void);
+
+bool ReadSwitchState(void);
+
+void UpdateHelicopter(void);
+
+void initialiseSwitch (void);
 
 #endif /* PWMOTOR_H_ */
 

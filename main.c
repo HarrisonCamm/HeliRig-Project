@@ -162,8 +162,8 @@ main(void)
     initDisplay ();
     initQuad();
     initialisePWM();
-    initialiseUSB_UART ();
-    initialiseSwitch ();
+    initialiseUSB_UART();
+    initialiseSwitch();
 
 
     //
@@ -175,6 +175,8 @@ main(void)
     
     // Calculate and display the rounded mean of the buffer contents
     initLandedADC = getAltMean();
+
+    initAltLimits(initLandedADC);
 
     while (1)
     {
@@ -204,14 +206,14 @@ main(void)
 
         if (flagUART) {
 
-            int32_t actualAlt = getAltPercent(currentAlt, initLandedADC);
-            int32_t desireAlt = getAltPercent(getAltSet(), initLandedADC);
+            int32_t actualAlt = getAltPercent(initLandedADC, currentAlt);
+            int32_t desireAlt = getAltPercent(initLandedADC, getAltSet());
 
-            int32_t actualYaw = getYawDegree(currentYaw);
-            int32_t desireYaw = getYawDegree(getYawSet());
+            int32_t actualYaw = getYawDegree(currentYaw) / SCALE_BY_100;
+            int32_t desireYaw = getYawDegree(getYawSet()) / SCALE_BY_100;
 
             //Update UART string
-            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty);
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d \r\n", currentAlt, getAltSet(), actualYaw, desireYaw, mainDuty, tailDuty);
             UARTSend (statusStr);
 
             flagUART = false;
