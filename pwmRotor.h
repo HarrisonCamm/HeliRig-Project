@@ -17,15 +17,15 @@
 
 //ALT and YAW
 #define ADC_STEP_FOR_1V 1240
-#define ALT_STEP 10 //124    // 1240/10  For 10% of 1V step
+#define ALT_STEP 124    // 1240/10  For 10% of 1V step
 #define YAW_STEP 19  //448 *15/360 degrees rounded
 #define GRAVITY 33
 #define KC 0.8
 
 
 
-//Delta time HZ 100HZ
-#define DELTA_T 0.01 //seconds
+//Delta time HZ 1000Hz
+#define DELTA_T 0.001 //seconds
 
 // PID config
 //MAIN ROTOR
@@ -121,7 +121,7 @@ void decYaw (void);
 
 void InitializeHardware(void);
 
-void UpdateHelicopter(void);
+void UpdateHelicopterState(int32_t currentYaw, int32_t currentAltitude);
 
 bool ReadSwitchState(void);
 
@@ -129,14 +129,19 @@ int32_t getAltSet (void);
 
 int32_t getYawSet (void);
 
+char* getHeliState (void);
 
-bool landingComplete(void);
+bool landingComplete(int32_t yaw, int32_t altitude);
 
 bool ReadSwitchState(void);
 
 void UpdateHelicopter(void);
 
 void initialiseSwitch (void);
+
+void PWM_ON (void);
+
+void PWM_OFF (void);
 
 #endif /* PWMOTOR_H_ */
 

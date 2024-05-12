@@ -21,6 +21,8 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
     switch (displayCycle) {
         case PROCESSED:
         {
+            bool neg_zero = false;
+
             OLEDStringDraw ("Helicopter Stats", 0, 0);
 
             // Display ADC input as a height percentage
@@ -34,12 +36,19 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
             // Prevent the decimal portion from displaying as negative
             if (yawDecimal < 0) {
                 yawDecimal *= -1;
+                neg_zero = true;
             }
 
-            //Display yaw in degrees to 2dp
-            usnprintf(lineString, sizeof(lineString), "Yaw(deg):%d.%d   ", yawInt, yawDecimal);
+            if (neg_zero && yawInt == 0) {
+                //Display a -ve zero as integer -ve 0 does not exist
+                usnprintf(lineString, sizeof(lineString), "Yaw(deg):-0.%d   ", yawDecimal);
+            } else {
+                //Display yaw in degrees to 2dp
+                usnprintf(lineString, sizeof(lineString), "Yaw(deg):%d.%d   ", yawInt, yawDecimal);
+            }
             OLEDStringDraw (lineString, 0, 2);
 
+            neg_zero = false;
             break;
         }
         case RAW:

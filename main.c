@@ -39,7 +39,7 @@ static volatile bool flagUART = false;
 //********************************************************
 // Global variables
 //********************************************************
-#define MAX_STR_LEN 90
+#define MAX_STR_LEN 105
 
 char statusStr[MAX_STR_LEN + 1];
 
@@ -212,8 +212,10 @@ main(void)
             int32_t actualYaw = getYawDegree(currentYaw) / SCALE_BY_100;
             int32_t desireYaw = getYawDegree(getYawSet()) / SCALE_BY_100;
 
+            char *heliState = getHeliState();
+
             //Update UART string
-            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d \r\n", currentAlt, getAltSet(), actualYaw, desireYaw, mainDuty, tailDuty);
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty, heliState);
             UARTSend (statusStr);
 
             flagUART = false;

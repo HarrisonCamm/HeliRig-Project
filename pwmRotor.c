@@ -17,10 +17,16 @@ static uint16_t MAX_ALT = 0;
 static uint16_t MIN_ALT = 0;
 
 // Initialize state
-static volatile HelicopterState state = LANDED;
+static HelicopterState heliState = LANDED;
+static bool landedLock = true;
 
-
-
+// Corresponding array of strings for helicopter state enum
+static char *HELISTATE_STRING[] = {
+    "LANDED",
+    "TAKING OFF",
+    "FLYING",
+    "LANDING"
+};
 
 
 /*********************************************************
@@ -52,7 +58,7 @@ initialisePWM (void)
     PWMGenEnable(PWM_MAIN_BASE, PWM_MAIN_GEN);
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
-    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, false);
 
 
     //init Tail
@@ -75,7 +81,7 @@ initialisePWM (void)
     PWMGenEnable(PWM_TAIL_BASE, PWM_TAIL_GEN);
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
-    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }
 
 void initialiseSwitch (void) {
@@ -84,7 +90,7 @@ void initialiseSwitch (void) {
 
     // Configure the GPIO pin for the mode slider switch (PA7)
     GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_7);
-    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
 }
 
 void initAltLimits (uint16_t initLandedADC) {
@@ -220,40 +226,48 @@ int32_t getYawSet (void) {
     return yawSetPoint;
 }
 
+char* getHeliState (void) {
+    return HELISTATE_STRING[heliState];
+}
+
 
 /********************************************************
  * Function to set the Helicopter state
  ********************************************************/
 void UpdateHelicopterState(int32_t currentYaw, int32_t currentAltitude) {
-    static bool prevSwitchState = false;
-    bool currentSwitchState = ReadSwitchState();
+    bool sw1High = ReadSwitchState();
 
-    switch (state) {
+    switch (heliState) {
         case LANDED:
-            if (!prevSwitchState && currentSwitchState) {
-                state = TAKING_OFF;
+            if (!sw1High) {
+                landedLock = false;
+            }
+            if (!landedLock && sw1High) {
+                heliState = TAKING_OFF;
+            } else {
+                PWM_OFF();
+                altSetPoint = MIN_ALT;
             }
             break;
         case TAKING_OFF:
             // Activate motors to take off
             // Transition to FLYING after successful takeoff
-            state = FLYING;
+            heliState = FLYING;
+            PWM_ON();
             break;
         case FLYING:
-            if (!currentSwitchState) {
-                state = LANDING;
+            if (!sw1High) {
+                heliState = LANDING;
             }
             break;
         case LANDING:
             // Deactivate motors to land
             // Remain in LANDING until landing is complete
             if (landingComplete(currentYaw, currentAltitude)) {
-                state = LANDED;
+                heliState = LANDED;
             }
             break;
     }
-
-    prevSwitchState = currentSwitchState;
 }
 
 
@@ -285,4 +299,14 @@ bool landingComplete(int32_t yaw, int32_t altitude) {
     else {
         return false;
     }
+}
+
+void PWM_ON (void) {
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
+}
+
+void PWM_OFF (void) {
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, false);
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }
