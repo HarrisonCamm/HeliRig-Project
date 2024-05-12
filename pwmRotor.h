@@ -18,7 +18,9 @@
 //ALT and YAW
 #define ADC_STEP_FOR_1V 1240
 #define ALT_STEP 124    // 1240/10  For 10% of 1V step
+#define ALT_LAND 12     // 1% of Max height
 #define YAW_STEP 19  //448 *15/360 degrees rounded
+#define YAW_LIMIT 6     // ~5 degrees
 #define GRAVITY 33
 #define KC 0.8
 
@@ -29,12 +31,12 @@
 
 // PID config
 //MAIN ROTOR
-#define KPM 0.01
+#define KPM 2
 #define KIM 0
 #define KDM 0
 
 //TAIL ROTOR
-#define KPT 0.01
+#define KPT 10
 #define KIT 0
 #define KDT 0
 
@@ -81,14 +83,6 @@
 #define PWM_TAIL_FREQ        200
 
 
-// Define states for the helicopter
-typedef enum {
-    LANDED,
-    TAKING_OFF,
-    FLYING,
-    LANDING
-} HelicopterState;
-
 
 #ifndef PWMROTOR_H_
 #define PWMROTOR_H_
@@ -107,37 +101,23 @@ controllerMain (uint16_t sensor);
 int32_t
 controllerTail (int32_t mainControl, int16_t sensor);
 
-void incKP (void);
-
-void decKP (void);
-
 void incAlt (void);
 
 void decAlt (void);
+
+void setAlt (int16_t setPoint);
 
 void incYaw (void);
 
 void decYaw (void);
 
-void InitializeHardware(void);
-
-void UpdateHelicopterState(int32_t currentYaw, int32_t currentAltitude);
-
-bool ReadSwitchState(void);
+void setYaw (int16_t setPoint);
 
 int32_t getAltSet (void);
 
 int32_t getYawSet (void);
 
-char* getHeliState (void);
-
-bool landingComplete(int32_t yaw, int32_t altitude);
-
-bool ReadSwitchState(void);
-
-void UpdateHelicopter(void);
-
-void initialiseSwitch (void);
+uint16_t getMIN_ALT (void);
 
 void PWM_ON (void);
 

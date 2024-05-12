@@ -5,11 +5,42 @@
  *      Author: jwi182
  */
 
+#include <stdbool.h>
+#include <stdint.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/gpio.h"
+#include "driverlib/pwm.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/sysctl.h"
+#include "pwmRotor.h"
+#include "buttons4.h"
+
+// Define states for the helicopter
+typedef enum {
+    LANDED,
+    TAKING_OFF,
+    FLYING,
+    LANDING
+} HelicopterState;
+
+
 #ifndef HELISTATE_H_
 #define HELISTATE_H_
 
+void initialiseSwitch (void);
+
+bool ReadSwitchState(void);
+
+void poleButtons(void);
+
+void UpdateHelicopterState(int32_t currentYaw, uint16_t currentAlt);
 
 
+
+char* getHeliState (void);
+
+bool landingComplete(int32_t yaw, uint16_t altitude);
 
 
 #endif /* HELISTATE_H_ */

@@ -8,25 +8,12 @@
 #include <pwmRotor.h>
 
 
-static float KPMvar = 1;
-
-static int16_t altSetPoint = 2900;
+static int16_t altSetPoint = 0;
 static int16_t yawSetPoint = 0;
 
 static uint16_t MAX_ALT = 0;
 static uint16_t MIN_ALT = 0;
 
-// Initialize state
-static HelicopterState heliState = LANDED;
-static bool landedLock = true;
-
-// Corresponding array of strings for helicopter state enum
-static char *HELISTATE_STRING[] = {
-    "LANDED",
-    "TAKING OFF",
-    "FLYING",
-    "LANDING"
-};
 
 
 /*********************************************************
@@ -84,19 +71,12 @@ initialisePWM (void)
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }
 
-void initialiseSwitch (void) {
-    // Enable Peripheral Clocks for GPIO Port A (for PA7)
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-
-    // Configure the GPIO pin for the mode slider switch (PA7)
-    GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_7);
-    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
-}
 
 void initAltLimits (uint16_t initLandedADC) {
     //Initialise min and max ADC heights
     MIN_ALT = initLandedADC;
     MAX_ALT = initLandedADC - ADC_STEP_FOR_1V;
+    altSetPoint = initLandedADC;
 }
 
 
@@ -133,7 +113,7 @@ controllerMain (uint16_t sensor) {
     static uint16_t prevSensor = 0;
 
     float error = altSetPoint - sensor;
-    float P = KPMvar * error;
+    float P = KPM * error;
     float I = KIM * error * DELTA_T;
     float D = KDM * (prevSensor - sensor) / DELTA_T;
 
@@ -182,14 +162,6 @@ controllerTail (int32_t mainControl, int16_t sensor) {
     return control;
 }
 
-void incKP (void) {
-    KPMvar += 1;
-}
-
-void decKP (void) {
-    KPMvar -= 1;
-}
-
 
 void incAlt (void) {
     altSetPoint -= ALT_STEP;
@@ -206,6 +178,9 @@ void decAlt (void) {
     }
 }
 
+void setAlt (int16_t setPoint) {
+    altSetPoint = setPoint;
+}
 
 void incYaw (void) {
     yawSetPoint += YAW_STEP;
@@ -218,6 +193,10 @@ void decYaw (void) {
     //special case
 }
 
+void setYaw (int16_t setPoint) {
+    yawSetPoint = setPoint;
+}
+
 int32_t getAltSet (void) {
     return altSetPoint;
 }
@@ -226,80 +205,10 @@ int32_t getYawSet (void) {
     return yawSetPoint;
 }
 
-char* getHeliState (void) {
-    return HELISTATE_STRING[heliState];
+uint16_t getMIN_ALT (void) {
+    return MIN_ALT;
 }
 
-
-/********************************************************
- * Function to set the Helicopter state
- ********************************************************/
-void UpdateHelicopterState(int32_t currentYaw, int32_t currentAltitude) {
-    bool sw1High = ReadSwitchState();
-
-    switch (heliState) {
-        case LANDED:
-            if (!sw1High) {
-                landedLock = false;
-            }
-            if (!landedLock && sw1High) {
-                heliState = TAKING_OFF;
-            } else {
-                PWM_OFF();
-                altSetPoint = MIN_ALT;
-            }
-            break;
-        case TAKING_OFF:
-            // Activate motors to take off
-            // Transition to FLYING after successful takeoff
-            heliState = FLYING;
-            PWM_ON();
-            break;
-        case FLYING:
-            if (!sw1High) {
-                heliState = LANDING;
-            }
-            break;
-        case LANDING:
-            // Deactivate motors to land
-            // Remain in LANDING until landing is complete
-            if (landingComplete(currentYaw, currentAltitude)) {
-                heliState = LANDED;
-            }
-            break;
-    }
-}
-
-
-
-
-bool ReadSwitchState(void) {
-    // Read the current state of the switch (HIGH = UP)
-    return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
-}
-
-
-
-
-
-
-bool landingComplete(int32_t yaw, int32_t altitude) {
-    // Logic to check if landing is complete
-
-    if (yaw == 0) {
-
-        if(altitude == 0) {
-            return true;
-        }
-        else {
-            return false;
-        }
-
-    }
-    else {
-        return false;
-    }
-}
 
 void PWM_ON (void) {
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);

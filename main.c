@@ -22,12 +22,12 @@
 #include "circBufT.h"
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
-#include "buttons4.h"
 #include "display.h"
 #include "ADC.h"
 #include "quadrature.h"
 #include "pwmRotor.h"
 #include "uart.h"
+#include "heliState.h"
 
 
 //Task flags
@@ -43,7 +43,7 @@ static volatile bool flagUART = false;
 
 char statusStr[MAX_STR_LEN + 1];
 
-#define CONTROL_PERIOD 1    //Corrosponds to 1000Hz
+#define CONTROL_PERIOD 4    //Corrosponds to 1000Hz
 #define BUTTON_PERIOD 10    //Corrosponds to 100Hz
 #define DISPLAY_PERIOD 15   //Corrosponds to 66.67Hz
 #define UART_PERIOD 200     //Corrosponds to 5Hz
@@ -119,32 +119,6 @@ SysTickIntHandler(void)
     uartCounter++;
 }
 
-void
-poleButtons(void) {
-
-    updateButtons();
-
-    // Left button decreases Yaw
-    if (checkButton(LEFT) == PUSHED) {
-        decYaw();
-    }
-
-    // Right button decreases Yaw
-    if (checkButton(RIGHT) == PUSHED) {
-        incYaw();
-    }
-
-    // Right button decreases Yaw
-    if (checkButton(UP) == PUSHED) {
-        incAlt();
-    }
-
-    // Right button decreases Yaw
-    if (checkButton(DOWN) == PUSHED) {
-        decAlt();
-    }
-}
-
 
 int
 main(void)
@@ -194,7 +168,6 @@ main(void)
             flagController = false;
         }
         if (flagButtons) {
-            poleButtons();
             UpdateHelicopterState(currentYaw, currentAlt);
             flagButtons = false;
         }
