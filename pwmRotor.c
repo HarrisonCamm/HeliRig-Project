@@ -141,7 +141,7 @@ controllerMain (uint16_t sensor) {
 /********************************************************
  * Function to set the Helicopter state
  ********************************************************/
-void UpdateHelicopter(void) {
+void UpdateHelicopterState(void) {
     static bool prevSwitchState = false;
     bool currentSwitchState = ReadSwitchState();
 
@@ -173,16 +173,26 @@ void UpdateHelicopter(void) {
     prevSwitchState = currentSwitchState;
 }
 
+
+
+
+
 bool ReadSwitchState(void) {
     // Read the current state of the switch (HIGH = UP)
     return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
 }
 
 
-bool landingComplete(void) {
-    // Implement logic to check if landing is complete
-    // For simplicity, assume immediate completion for now
-    return true;
+
+bool landingComplete(int32_t currentYaw) {
+    // Logic to check if landing is complete
+
+    if (currentYaw == 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 
