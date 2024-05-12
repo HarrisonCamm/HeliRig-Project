@@ -88,7 +88,7 @@ void
 initialisePWM (void);
 
 void
-setDUTY (uint32_t mainDuty, uint32_t tailDuty);
+setDuty (uint32_t mainDuty, uint32_t tailDuty);
 
 int32_t
 controllerMain (uint16_t sensor);
@@ -103,6 +103,10 @@ void decKP (void);
 void incAlt (void);
 
 void decAlt (void);
+
+void incYaw (void);
+
+void decYaw (void);
 
 int32_t getAltSet (void);
 

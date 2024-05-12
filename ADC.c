@@ -8,7 +8,7 @@
 #include "ADC.h"
 
 static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
-static uint32_t g_ulSampCnt;
+//static uint32_t g_ulSampCnt;  //Unused at time being
 
 //*****************************************************************************
 //

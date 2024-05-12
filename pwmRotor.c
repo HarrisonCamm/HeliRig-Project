@@ -73,7 +73,7 @@ initialisePWM (void)
  * Function to set the freq, duty cycle of M0PWM7
  ********************************************************/
 void
-setDUTY (uint32_t mainDuty, uint32_t tailDuty)
+setDuty (uint32_t mainDuty, uint32_t tailDuty)
 {
     //System clock
     static uint32_t sysClock = 0;

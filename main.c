@@ -34,9 +34,10 @@ static volatile bool flagController = false;
 static volatile bool flagButtons = false;
 static volatile bool flagDisplay = false;
 
-#define CONTROL_PERIOD 1 //Corrosponds to 1ms
-#define BUTTON_PERIOD 10 //Corrosponds to 10ms
-#define DISPLAY_PERIOD 15 //Corrosponds to 15ms
+#define CONTROL_PERIOD 1    //Corrosponds to 1ms
+#define BUTTON_PERIOD 10    //Corrosponds to 10ms
+#define DISPLAY_PERIOD 15   //Corrosponds to 15ms
+#define START_DELAY 5       //200 ms delay
 
 
 
@@ -102,26 +103,28 @@ SysTickIntHandler(void)
 }
 
 void
-poleButtons(uint16_t* initialADC, enum DisplayMode* displayCycle, uint16_t* currentAlt, int32_t* currentYaw) {
+poleButtons(void) {
 
     updateButtons();
-    //
-    // Background task: calculate the (approximate) mean of the values in the
 
-    *currentAlt = getAltMean();
-    *currentYaw = getYawPosition();
-
-    // Reset Landed ADC value when button pushed
+    // Left button decreases Yaw
     if (checkButton(LEFT) == PUSHED) {
-        *initialADC = *currentAlt;
+        decYaw();
     }
 
-    // Cycle through display modes when button pushed
+    // Right button decreases Yaw
+    if (checkButton(RIGHT) == PUSHED) {
+        incYaw();
+    }
+
+    // Right button decreases Yaw
     if (checkButton(UP) == PUSHED) {
-        *displayCycle += 1;
-        if (*displayCycle == CYCLE_BACK) {
-            *displayCycle = PROCESSED;
-        }
+        incAlt();
+    }
+
+    // Right button decreases Yaw
+    if (checkButton(DOWN) == PUSHED) {
+        decAlt();
     }
 }
 
@@ -132,6 +135,8 @@ main(void)
     uint16_t currentAlt;
     int32_t currentYaw;
     uint16_t initLandedADC;
+    int32_t mainDuty;
+    int32_t tailDuty;
     enum DisplayMode displayCycle = PROCESSED;
 
     initClock ();
@@ -146,7 +151,7 @@ main(void)
     // Enable interrupts to the processor.
     IntMasterEnable();
 
-    SysCtlDelay (SysCtlClockGet() / 6);  // Wait for buffer to populate
+    SysCtlDelay (SysCtlClockGet() / START_DELAY);  // ~200ms delay for buffer to populate
 
     
     // Calculate and display the rounded mean of the buffer contents
@@ -156,45 +161,28 @@ main(void)
     {
         //Flag Controller
         if (flagController) {
+            //Update current sensor values
+            currentAlt = getAltMean();
+            currentYaw = getYawPosition();
+
+            mainDuty = controllerMain(currentAlt);
+            tailDuty = controllerTail(mainDuty, currentYaw);
+
+            setDuty(mainDuty, tailDuty);
 
             flagController = false;
         }
         if (flagButtons) {
-            //poleButtons
-            updateButtons();
+            poleButtons();
             flagButtons = false;
         }
         if (flagDisplay) {
             // Refresh the display
             displayWrite(initLandedADC, currentAlt, currentYaw, displayCycle);
-            flagButtons = false;
+            flagDisplay = false;
         }
 
 
-        //
-        // Background task: calculate the (approximate) mean of the values in the
-
-        currentAlt = getAltMean();
-        currentYaw = getYawPosition();
-
-        // Reset Landed ADC value when button pushed
-        if (checkButton(LEFT) == PUSHED) {
-            initLandedADC = currentAlt;
-        }
-
-        // Cycle through display modes when button pushed
-        if (checkButton(UP) == PUSHED) {
-            displayCycle += 1;
-            if (displayCycle == CYCLE_BACK) {
-                displayCycle = PROCESSED;
-            }
-        }
-
-
-        // Refresh the display
-        displayWrite(initLandedADC, currentAlt, currentYaw, displayCycle);
-
-
-        SysCtlDelay (SysCtlClockGet() / 100);  // Delay to prevent flickering
+        //SysCtlDelay (SysCtlClockGet() / 100);  // Delay to prevent flickering
     }
 }
