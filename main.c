@@ -193,7 +193,7 @@ main(void)
         }
         if (flagButtons) {
             poleButtons();
-            UpdateHelicopterState();
+            UpdateHelicopterState(currentYaw, currentAlt);
             flagButtons = false;
         }
         if (flagDisplay) {
