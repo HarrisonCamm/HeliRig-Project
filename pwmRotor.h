@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 #include "driverlib/pin_map.h"
@@ -108,9 +109,24 @@ void incYaw (void);
 
 void decYaw (void);
 
+void InitializeHardware(void);
+
+void UpdateHelicopter(void);
+
+bool ReadSwitchState(void);
+
 int32_t getAltSet (void);
 
 int32_t getYawSet (void);
+
+
+// Define states for the helicopter
+typedef enum {
+    LANDED,
+    TAKING_OFF,
+    FLYING,
+    LANDING
+} HelicopterState;
 
 #endif /* PWMOTOR_H_ */
 
