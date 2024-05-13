@@ -170,7 +170,7 @@ main(void)
         }
         if (flagButtons) {
             readResetButtonState();
-            UpdateHelicopterState(currentYaw, currentAlt);
+            updateHelicopterState(currentYaw, currentAlt);
             flagButtons = false;
         }
         if (flagDisplay) {

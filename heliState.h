@@ -30,11 +30,15 @@ typedef enum {
 
 void initialiseSwitch (void);
 
-bool ReadSwitchState(void);
+void initialiseResetButton (void);
+
+void readResetButtonState(void);
+
+bool readSwitchState(void);
 
 void poleButtons(void);
 
-void UpdateHelicopterState(int32_t currentYaw, uint16_t currentAlt);
+void updateHelicopterState(int32_t currentYaw, uint16_t currentAlt);
 
 
 

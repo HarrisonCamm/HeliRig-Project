@@ -40,14 +40,14 @@ void initialiseResetButton (void) {
 
 
 void readResetButtonState(void) {
-    if (return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
+    if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
         SysCtlReset();
     }
 }
 
 
 
-bool ReadSwitchState(void) {
+bool readSwitchState(void) {
     // Read the current state of the switch (HIGH = UP)
     return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
 }
@@ -82,8 +82,8 @@ poleButtons(void) {
 /********************************************************
  * Function to set the Helicopter state
  ********************************************************/
-void UpdateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
-    bool sw1High = ReadSwitchState();
+void updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
+    bool sw1High = readSwitchState();
 
     switch (heliState) {
         case LANDED:

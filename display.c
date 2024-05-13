@@ -21,7 +21,7 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
     switch (displayCycle) {
         case PROCESSED:
         {
-            bool neg_zero = false;
+            bool negZero = false;
 
             OLEDStringDraw ("Helicopter Stats", 0, 0);
 
@@ -36,10 +36,10 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
             // Prevent the decimal portion from displaying as negative
             if (yawDecimal < 0) {
                 yawDecimal *= -1;
-                neg_zero = true;
+                negZero = true;
             }
 
-            if (neg_zero && yawInt == 0) {
+            if (negZero && yawInt == 0) {
                 //Display a -ve zero as integer -ve 0 does not exist
                 usnprintf(lineString, sizeof(lineString), "Yaw(deg):-0.%d   ", yawDecimal);
             } else {
@@ -48,7 +48,7 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
             }
             OLEDStringDraw (lineString, 0, 2);
 
-            neg_zero = false;
+            negZero = false;
             break;
         }
         case RAW:
