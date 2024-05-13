@@ -8,10 +8,13 @@
 #include <pwmRotor.h>
 
 
-static float KPMvar = 1;
-
 static int16_t altSetPoint = 0;
 static int16_t yawSetPoint = 0;
+
+static uint16_t MAX_ALT = 0;
+static uint16_t MIN_ALT = 0;
+
+
 
 /*********************************************************
  * initialisePWM
@@ -69,6 +72,14 @@ initialisePWM (void)
 }
 
 
+void initAltLimits (uint16_t initLandedADC) {
+    //Initialise min and max ADC heights
+    MIN_ALT = initLandedADC;
+    MAX_ALT = initLandedADC - ADC_STEP_FOR_1V;
+    altSetPoint = initLandedADC;
+}
+
+
 /********************************************************
  * Function to set the freq, duty cycle of M0PWM7
  ********************************************************/
@@ -102,12 +113,12 @@ controllerMain (uint16_t sensor) {
     static uint16_t prevSensor = 0;
 
     float error = altSetPoint - sensor;
-    float P = KPMvar * error;
+    float P = KPM * error;
     float I = KIM * error * DELTA_T;
     float D = KDM * (prevSensor - sensor) / DELTA_T;
 
 
-    int32_t control = P + (dI + I) + D + GRAVITY;
+    int32_t control = GRAVITY - P - (dI + I) - D;
 
     if (control > PWM_DUTY_MAX) {
         control = PWM_DUTY_MAX;
@@ -151,30 +162,25 @@ controllerTail (int32_t mainControl, int16_t sensor) {
     return control;
 }
 
-void incKP (void) {
-    KPMvar += 1;
-}
-
-void decKP (void) {
-    KPMvar -= 1;
-}
-
 
 void incAlt (void) {
-    altSetPoint += ALT_STEP;
-    if (altSetPoint > MAX_ALT){
+    altSetPoint -= ALT_STEP;
+    if (altSetPoint < MAX_ALT){
         altSetPoint = MAX_ALT;
     }
 }
 
 
 void decAlt (void) {
-    altSetPoint -= ALT_STEP;
-    if (altSetPoint < MIN_ALT){
+    altSetPoint += ALT_STEP;
+    if (altSetPoint > MIN_ALT){
         altSetPoint = MIN_ALT;
     }
 }
 
+void setAlt (int16_t setPoint) {
+    altSetPoint = setPoint;
+}
 
 void incYaw (void) {
     yawSetPoint += YAW_STEP;
@@ -187,10 +193,29 @@ void decYaw (void) {
     //special case
 }
 
+void setYaw (int16_t setPoint) {
+    yawSetPoint = setPoint;
+}
+
 int32_t getAltSet (void) {
     return altSetPoint;
 }
 
 int32_t getYawSet (void) {
     return yawSetPoint;
+}
+
+uint16_t getMIN_ALT (void) {
+    return MIN_ALT;
+}
+
+
+void PWM_ON (void) {
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
+}
+
+void PWM_OFF (void) {
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, false);
+    PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }

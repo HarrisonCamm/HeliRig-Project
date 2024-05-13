@@ -9,32 +9,34 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 
 //ALT and YAW
-#define MAX_ALT 100
-#define MIN_ALT 0
+#define ADC_STEP_FOR_1V 1240
 #define ALT_STEP 124    // 1240/10  For 10% of 1V step
+#define ALT_LAND 12     // 1% of Max height
 #define YAW_STEP 19  //448 *15/360 degrees rounded
-#define GRAVITY 30
+#define YAW_LIMIT 6     // ~5 degrees
+#define GRAVITY 33
 #define KC 0.8
 
 
 
-//Delta time HZ 100HZ
-#define DELTA_T 0.01 //seconds
+//Delta time HZ 1000Hz
+#define DELTA_T 0.001 //seconds
 
 // PID config
 //MAIN ROTOR
-#define KPM 1
+#define KPM 2
 #define KIM 0
 #define KDM 0
 
 //TAIL ROTOR
-#define KPT 1
+#define KPT 10
 #define KIT 0
 #define KDT 0
 
@@ -81,11 +83,14 @@
 #define PWM_TAIL_FREQ        200
 
 
+
 #ifndef PWMROTOR_H_
 #define PWMROTOR_H_
 
 void
 initialisePWM (void);
+
+void initAltLimits (uint16_t initLandedADC);
 
 void
 setDuty (uint32_t mainDuty, uint32_t tailDuty);
@@ -96,21 +101,27 @@ controllerMain (uint16_t sensor);
 int32_t
 controllerTail (int32_t mainControl, int16_t sensor);
 
-void incKP (void);
-
-void decKP (void);
-
 void incAlt (void);
 
 void decAlt (void);
+
+void setAlt (int16_t setPoint);
 
 void incYaw (void);
 
 void decYaw (void);
 
+void setYaw (int16_t setPoint);
+
 int32_t getAltSet (void);
 
 int32_t getYawSet (void);
+
+uint16_t getMIN_ALT (void);
+
+void PWM_ON (void);
+
+void PWM_OFF (void);
 
 #endif /* PWMOTOR_H_ */
 

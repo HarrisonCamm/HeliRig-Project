@@ -22,21 +22,31 @@
 #include "circBufT.h"
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
-#include "buttons4.h"
 #include "display.h"
 #include "ADC.h"
 #include "quadrature.h"
 #include "pwmRotor.h"
+#include "uart.h"
+#include "heliState.h"
 
 
 //Task flags
 static volatile bool flagController = false;
 static volatile bool flagButtons = false;
 static volatile bool flagDisplay = false;
+static volatile bool flagUART = false;
 
-#define CONTROL_PERIOD 1    //Corrosponds to 1ms
-#define BUTTON_PERIOD 10    //Corrosponds to 10ms
-#define DISPLAY_PERIOD 15   //Corrosponds to 15ms
+//********************************************************
+// Global variables
+//********************************************************
+#define MAX_STR_LEN 105
+
+char statusStr[MAX_STR_LEN + 1];
+
+#define CONTROL_PERIOD 4    //Corrosponds to 1000Hz
+#define BUTTON_PERIOD 10    //Corrosponds to 100Hz
+#define DISPLAY_PERIOD 15   //Corrosponds to 66.67Hz
+#define UART_PERIOD 200     //Corrosponds to 5Hz
 #define START_DELAY 5       //200 ms delay
 
 
@@ -75,6 +85,7 @@ SysTickIntHandler(void)
     static uint8_t controllerCounter = 0;
     static uint8_t buttonsCounter = 0;
     static uint8_t displayCounter = 0;
+    static uint8_t uartCounter = 0;
 
     //
     // Initiate a conversion
@@ -96,36 +107,16 @@ SysTickIntHandler(void)
         displayCounter = 0;
     }
 
+    if (uartCounter >= UART_PERIOD) {
+        flagUART = true;
+        uartCounter = 0;
+    }
+
 
     controllerCounter++;
     buttonsCounter++;
     displayCounter++;
-}
-
-void
-poleButtons(void) {
-
-    updateButtons();
-
-    // Left button decreases Yaw
-    if (checkButton(LEFT) == PUSHED) {
-        decYaw();
-    }
-
-    // Right button decreases Yaw
-    if (checkButton(RIGHT) == PUSHED) {
-        incYaw();
-    }
-
-    // Right button decreases Yaw
-    if (checkButton(UP) == PUSHED) {
-        incAlt();
-    }
-
-    // Right button decreases Yaw
-    if (checkButton(DOWN) == PUSHED) {
-        decAlt();
-    }
+    uartCounter++;
 }
 
 
@@ -145,6 +136,9 @@ main(void)
     initDisplay ();
     initQuad();
     initialisePWM();
+    initialiseUSB_UART();
+    initialiseSwitch();
+    initialiseResetButton();
 
 
     //
@@ -156,6 +150,8 @@ main(void)
     
     // Calculate and display the rounded mean of the buffer contents
     initLandedADC = getAltMean();
+
+    initAltLimits(initLandedADC);
 
     while (1)
     {
@@ -173,13 +169,31 @@ main(void)
             flagController = false;
         }
         if (flagButtons) {
-            poleButtons();
+            readResetButtonState();
+            updateHelicopterState(currentYaw, currentAlt);
             flagButtons = false;
         }
         if (flagDisplay) {
             // Refresh the display
             displayWrite(initLandedADC, currentAlt, currentYaw, displayCycle);
             flagDisplay = false;
+        }
+
+        if (flagUART) {
+
+            int32_t actualAlt = getAltPercent(initLandedADC, currentAlt);
+            int32_t desireAlt = getAltPercent(initLandedADC, getAltSet());
+
+            int32_t actualYaw = getYawDegree(currentYaw) / SCALE_BY_100;
+            int32_t desireYaw = getYawDegree(getYawSet()) / SCALE_BY_100;
+
+            char *heliState = getHeliState();
+
+            //Update UART string
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty, heliState);
+            UARTSend (statusStr);
+
+            flagUART = false;
         }
 
 
