@@ -38,19 +38,29 @@ void initialiseResetButton (void) {
     GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_6, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 }
 
-
-void readResetButtonState(void) {
-    if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
-        SysCtlReset();
-    }
+void initialiseYawRef (void) {
+    // Configure the GPIO pin for the virtual reset button
+    // Set the direction of the pin as input and enable the pull-up resistor.
+    GPIOPinTypeGPIOInput(GPIO_PORTC_BASE, GPIO_PIN_4);
+    GPIOPadConfigSet(GPIO_PORTC_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
 }
-
-
 
 bool readSwitchState(void) {
     // Read the current state of the switch (HIGH = UP)
     return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
 }
+
+void readResetButtonState(void) {
+    if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
+        //SysCtlReset();
+    }
+}
+
+bool readYawRef (void) {
+    return GPIOPinRead(GPIO_PORTC_BASE, GPIO_PIN_4);
+}
+
+
 
 
 void
