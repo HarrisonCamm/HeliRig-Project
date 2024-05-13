@@ -112,8 +112,11 @@ void updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
         case TAKING_OFF:
             // Activate motors to take off
             // Transition to FLYING after successful takeoff
-            heliState = FLYING;
             PWM_ON();
+            heliState = FLYING;
+//            if takeoffComplete(currentYaw, currentAlt) {
+//                heliState = FLYING;
+//            }
             break;
 
         case FLYING:
@@ -157,18 +160,13 @@ bool landingComplete(int32_t yaw, uint16_t altitude) {
     }
 }
 
-bool takeoffComplete (int32_t yaw, uint16_t altitude) {
-    if (yaw == 0) {
+//bool takeoffComplete (int32_t yaw, uint16_t altitude) {
+//    uint16_t minAlt = getMIN_ALT();
+//
+//    setAlt(minAlt - ALT_TAKEOFF_5_PERCENT);
+//    if (altitude > minAlt - ALT_TAKEOFF_5_PERCENT + ALT_LAND) {
+//
+//    }
+//
+//}
 
-        if(altitude == 0) {
-            return true;
-        }
-        else {
-            return false;
-        }
-
-    }
-    else {
-        return false;
-    }
-}

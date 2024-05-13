@@ -19,6 +19,7 @@
 #define ADC_STEP_FOR_1V 1240
 #define ALT_STEP 124    // 1240/10  For 10% of 1V step
 #define ALT_LAND 12     // 1% of Max height
+#define ALT_TAKEOFF_5_PERCENT 62 //5% of max a
 #define YAW_STEP 19  //448 *15/360 degrees rounded
 #define YAW_LIMIT 6     // ~5 degrees
 #define GRAVITY 33
@@ -36,7 +37,7 @@
 #define KDM 0
 
 //TAIL ROTOR
-#define KPT 2
+#define KPT 10
 #define KIT 0
 #define KDT 0
 
