@@ -27,7 +27,24 @@ void initialiseSwitch (void) {
     // Configure the GPIO pin for the mode slider switch (PA7)
     GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_7);
     GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
+
 }
+
+
+void initialiseResetButton (void) {
+    // Configure the GPIO pin for the virtual reset button
+    // Set the direction of the pin as input and enable the pull-up resistor.
+    GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_6);
+    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_6, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+}
+
+
+void readResetButtonState(void) {
+    if (return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
+        SysCtlReset();
+    }
+}
+
 
 
 bool ReadSwitchState(void) {

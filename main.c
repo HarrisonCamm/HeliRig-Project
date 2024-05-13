@@ -138,6 +138,7 @@ main(void)
     initialisePWM();
     initialiseUSB_UART();
     initialiseSwitch();
+    initialiseResetButton();
 
 
     //
@@ -168,6 +169,7 @@ main(void)
             flagController = false;
         }
         if (flagButtons) {
+            readResetButtonState();
             UpdateHelicopterState(currentYaw, currentAlt);
             flagButtons = false;
         }
