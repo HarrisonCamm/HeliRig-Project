@@ -11,7 +11,7 @@
 static int16_t altSetPoint = 0;
 static int16_t yawSetPoint = 0;
 
-static uint16_t MAX_ALT = 0;
+static uint16_t MAX_ALT = 0; //since they're constants, they shouldn't be uppercase...
 static uint16_t MIN_ALT = 0;
 
 
@@ -208,6 +208,12 @@ int32_t getYawSet (void) {
 uint16_t getMIN_ALT (void) {
     return MIN_ALT;
 }
+
+
+uint16_t getMAX_ALT (void) {
+    return MAX_ALT;
+}
+
 
 
 void PWM_ON (void) {
