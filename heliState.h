@@ -32,9 +32,13 @@ void initialiseSwitch (void);
 
 void initialiseResetButton (void);
 
+void initialiseYawRef (void);
+
 void readResetButtonState(void);
 
 bool readSwitchState(void);
+
+bool readYawRef (void);
 
 void poleButtons(void);
 

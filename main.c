@@ -138,7 +138,8 @@ main(void)
     initialisePWM();
     initialiseUSB_UART();
     initialiseSwitch();
-    initialiseResetButton();
+    //initialiseResetButton();
+    initialiseYawRef();
 
 
     //
@@ -190,7 +191,7 @@ main(void)
             char *heliState = getHeliState();
 
             //Update UART string
-            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty, heliState);
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, readYawRef(), heliState);
             UARTSend (statusStr);
 
             flagUART = false;

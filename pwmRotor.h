@@ -36,7 +36,7 @@
 #define KDM 0
 
 //TAIL ROTOR
-#define KPT 10
+#define KPT 2
 #define KIT 0
 #define KDT 0
 
