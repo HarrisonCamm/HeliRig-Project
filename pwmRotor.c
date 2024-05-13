@@ -109,6 +109,7 @@ setDuty (uint32_t mainDuty, uint32_t tailDuty)
 
 int32_t
 controllerMain (uint16_t sensor) {
+
     static float dI = 0;
     static uint16_t prevSensor = 0;
 
@@ -138,10 +139,19 @@ controllerMain (uint16_t sensor) {
 
 int32_t
 controllerTail (int32_t mainControl, int16_t sensor) {
+    int16_t error = yawSetPoint - sensor;
+    if (error < -224) {
+        error = 448 + error;
+    } else if (error > 224) {
+        error = 448 - error;
+    } else if ((error > -224) && (error < 224))  {
+        error = error;
+    }
+
     static float dI = 0;
     static int16_t prevSensor = 0;
 
-    float error = yawSetPoint - sensor;
+
     float P = KPT * error;
     float I = KIT * error * DELTA_T;
     float D = KDT * (prevSensor - sensor) / DELTA_T;
@@ -185,12 +195,18 @@ void setAlt (int16_t setPoint) {
 void incYaw (void) {
     yawSetPoint += YAW_STEP;
     //special case
+    if (yawSetPoint > 224) {
+        yawSetPoint = -224 + (yawSetPoint - 224);
+    }
 }
 
 
 void decYaw (void) {
     yawSetPoint -= YAW_STEP;
     //special case
+    if (yawSetPoint < -224) {
+        yawSetPoint = 224 + (yawSetPoint + 224);
+    }
 }
 
 void setYaw (int16_t setPoint) {

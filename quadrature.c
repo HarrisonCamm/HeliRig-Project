@@ -68,7 +68,7 @@ void GPIOYawHandler(void)
         yawPosition = -WRAPSTEP + (yawPosition - WRAPSTEP);
     }
     if (yawPosition < -WRAPSTEP) {
-        yawPosition = WRAPSTEP - (yawPosition + WRAPSTEP);
+        yawPosition = WRAPSTEP + (yawPosition + WRAPSTEP);
     }
 
     // Update last_state to the current state for the next interrupt
