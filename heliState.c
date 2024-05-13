@@ -51,8 +51,8 @@ bool readSwitchState(void) {
 }
 
 void readResetButtonState(void) {
-    if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
-        //SysCtlReset();
+    if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 1) {
+        SysCtlReset();
     }
 }
 
@@ -92,7 +92,7 @@ poleButtons(void) {
 /********************************************************
  * Function to set the Helicopter state
  ********************************************************/
-void updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
+HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
     bool sw1High = readSwitchState();
 
     switch (heliState) {
@@ -113,10 +113,9 @@ void updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
             // Activate motors to take off
             // Transition to FLYING after successful takeoff
             PWM_ON();
-            heliState = FLYING;
-//            if takeoffComplete(currentYaw, currentAlt) {
-//                heliState = FLYING;
-//            }
+            if (takeoffComplete(currentYaw, currentAlt)) {
+                heliState = FLYING;
+            }
             break;
 
         case FLYING:
@@ -135,6 +134,7 @@ void updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
             }
             break;
     }
+    return heliState;
 }
 
 char* getHeliState (void) {
@@ -160,13 +160,25 @@ bool landingComplete(int32_t yaw, uint16_t altitude) {
     }
 }
 
-//bool takeoffComplete (int32_t yaw, uint16_t altitude) {
-//    uint16_t minAlt = getMIN_ALT();
-//
-//    setAlt(minAlt - ALT_TAKEOFF_5_PERCENT);
-//    if (altitude > minAlt - ALT_TAKEOFF_5_PERCENT + ALT_LAND) {
-//
-//    }
-//
-//}
+bool takeoffComplete (int32_t yaw, uint16_t altitude) {
+    uint16_t minAlt = getMIN_ALT();
+
+    setAlt(minAlt - ALT_TAKEOFF_5_PERCENT);
+    if (altitude < minAlt - ALT_TAKEOFF_5_PERCENT + ALT_LAND) {
+        setYaw(223);
+        if (!readYawRef()) {
+            setYawZero();
+            setYaw(0);
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    } else {
+        return false;
+    }
+
+
+}
 

@@ -129,6 +129,8 @@ main(void)
     int32_t mainDuty;
     int32_t tailDuty;
     enum DisplayMode displayCycle = PROCESSED;
+    HelicopterState heliState = LANDED;
+    bool sweepEn = 0;
 
     initClock ();
     initButtons();
@@ -138,7 +140,7 @@ main(void)
     initialisePWM();
     initialiseUSB_UART();
     initialiseSwitch();
-    //initialiseResetButton();
+    initialiseResetButton();
     initialiseYawRef();
 
 
@@ -163,7 +165,7 @@ main(void)
             currentYaw = getYawPosition();
 
             mainDuty = controllerMain(currentAlt);
-            tailDuty = controllerTail(mainDuty, currentYaw);
+            tailDuty = controllerTail(mainDuty, currentYaw, sweepEn);
 
             setDuty(mainDuty, tailDuty);
 
@@ -171,7 +173,12 @@ main(void)
         }
         if (flagButtons) {
             readResetButtonState();
-            updateHelicopterState(currentYaw, currentAlt);
+            heliState = updateHelicopterState(currentYaw, currentAlt);
+            if (heliState == TAKING_OFF) {
+                sweepEn = true;
+            } else {
+                sweepEn = false;
+            }
             flagButtons = false;
         }
         if (flagDisplay) {
@@ -188,10 +195,10 @@ main(void)
             int32_t actualYaw = getYawDegree(currentYaw) / SCALE_BY_100;
             int32_t desireYaw = getYawDegree(getYawSet()) / SCALE_BY_100;
 
-            char *heliState = getHeliState();
+            char *heliString = getHeliState();
 
             //Update UART string
-            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty, heliState);
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty, heliString);
             UARTSend (statusStr);
 
             flagUART = false;

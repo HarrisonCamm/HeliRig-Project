@@ -27,6 +27,8 @@
 
 void initQuad (void);
 
+void setYawZero (void);
+
 int32_t getYawPosition (void);
 
 void GPIOYawHandler (void);

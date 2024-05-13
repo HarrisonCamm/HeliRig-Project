@@ -27,17 +27,16 @@
 
 
 
-//Delta time HZ 1000Hz
-#define DELTA_T 0.001 //seconds
+//Delta time HZ 250Hz
+#define DELTA_T 0.004 //seconds
 
 // PID config
 //MAIN ROTOR
-#define KPM 2
-#define KIM 0
+#define KPM 1.5
+#define KIM 10
 #define KDM 0
-
 //TAIL ROTOR
-#define KPT 10
+#define KPT 5
 #define KIT 0
 #define KDT 0
 
@@ -53,8 +52,8 @@
 #define PWM_START_DUTY  5
 #define PWM_DUTY_STEP   5
 
-#define PWM_DIVIDER_CODE   SYSCTL_PWMDIV_4
-#define PWM_DIVIDER        4
+#define PWM_DIVIDER_CODE   SYSCTL_PWMDIV_1
+#define PWM_DIVIDER        1
 
 //  PWM Hardware Details M0PWM7 (gen 3)
 //  ---Main Rotor PWM: PC5, J4-05
@@ -81,7 +80,7 @@
 #define PWM_TAIL_GPIO_BASE   GPIO_PORTF_BASE
 #define PWM_TAIL_GPIO_CONFIG GPIO_PF1_M1PWM5
 #define PWM_TAIL_GPIO_PIN    GPIO_PIN_1
-#define PWM_TAIL_FREQ        200
+#define PWM_TAIL_FREQ        300
 
 
 
@@ -100,7 +99,7 @@ int32_t
 controllerMain (uint16_t sensor);
 
 int32_t
-controllerTail (int32_t mainControl, int16_t sensor);
+controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn);
 
 void incAlt (void);
 

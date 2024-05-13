@@ -9,7 +9,7 @@
 
 
 static int16_t altSetPoint = 0;
-static int16_t yawSetPoint = 0;
+static int16_t yawSetPoint = -223;
 
 static uint16_t MAX_ALT = 0; //since they're constants, they shouldn't be uppercase...
 static uint16_t MIN_ALT = 0;
@@ -138,14 +138,17 @@ controllerMain (uint16_t sensor) {
  ********************************************************/
 
 int32_t
-controllerTail (int32_t mainControl, int16_t sensor) {
+controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn) {
     int16_t error = yawSetPoint - sensor;
-    if (error < -224) {
-        error = 448 + error;
-    } else if (error > 224) {
-        error = -448 + error;
-    } else if ((error > -224) && (error < 224))  {
-        error = error;
+
+    if (!sweepEn) {
+        if (error < -224) {
+            error = 448 + error;
+        } else if (error > 224) {
+            error = -448 + error;
+        } else if ((error > -224) && (error < 224))  {
+            error = error;
+        }
     }
 
     static float dI = 0;
@@ -156,14 +159,18 @@ controllerTail (int32_t mainControl, int16_t sensor) {
     float I = KIT * error * DELTA_T;
     float D = KDT * (prevSensor - sensor) / DELTA_T;
 
+    if (P > 30) {
+        P = 30;
+    }
+
     float coupling = mainControl * KC;
 
     int32_t control = P + (dI + I) + D + coupling;
 
     if (control > PWM_DUTY_MAX) {
         control = PWM_DUTY_MAX;
-    } else if (control < PWM_DUTY_MIN) {
-        control = PWM_DUTY_MIN;
+    } else if (control < 10) {
+        control = 10;
     } else {
         I = I + dI;
     }
@@ -183,8 +190,8 @@ void incAlt (void) {
 
 void decAlt (void) {
     altSetPoint += ALT_STEP;
-    if (altSetPoint > MIN_ALT){
-        altSetPoint = MIN_ALT;
+    if (altSetPoint > MIN_ALT - ALT_STEP){
+        altSetPoint = MIN_ALT - ALT_STEP; //Set min button altitude to 10%
     }
 }
 

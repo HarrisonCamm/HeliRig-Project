@@ -15,6 +15,7 @@
 #include "driverlib/sysctl.h"
 #include "pwmRotor.h"
 #include "buttons4.h"
+#include "quadrature.h"
 
 // Define states for the helicopter
 typedef enum {
@@ -42,7 +43,7 @@ bool readYawRef (void);
 
 void poleButtons(void);
 
-void updateHelicopterState(int32_t currentYaw, uint16_t currentAlt);
+HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt);
 
 
 
@@ -50,5 +51,6 @@ char* getHeliState (void);
 
 bool landingComplete(int32_t yaw, uint16_t altitude);
 
+bool takeoffComplete (int32_t yaw, uint16_t altitude);
 
 #endif /* HELISTATE_H_ */

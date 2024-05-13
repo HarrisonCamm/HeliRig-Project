@@ -7,7 +7,7 @@
 
 #include "quadrature.h"
 
-static volatile int32_t yawPosition = 0;
+static volatile int32_t yawPosition = -223;
 
 
 void initQuad (void)
@@ -23,6 +23,10 @@ void initQuad (void)
     GPIOIntEnable(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
 
+}
+
+void setYawZero (void) {
+    yawPosition = 0;
 }
 
 int32_t getYawPosition (void)
