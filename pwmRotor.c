@@ -123,8 +123,8 @@ controllerMain (uint16_t sensor) {
 
     if (control > PWM_DUTY_MAX) {
         control = PWM_DUTY_MAX;
-    } else if (control < PWM_DUTY_MIN) {
-        control = PWM_DUTY_MIN;
+    } else if (control < 15) {
+        control = 15;
     } else {
         I = I + dI;
     }
@@ -146,8 +146,6 @@ controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn) {
             error = 448 + error;
         } else if (error > 224) {
             error = -448 + error;
-        } else if ((error > -224) && (error < 224))  {
-            error = error;
         }
     }
 
