@@ -143,7 +143,7 @@ controllerTail (int32_t mainControl, int16_t sensor) {
     if (error < -224) {
         error = 448 + error;
     } else if (error > 224) {
-        error = 448 - error;
+        error = -448 + error;
     } else if ((error > -224) && (error < 224))  {
         error = error;
     }
