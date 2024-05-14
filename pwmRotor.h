@@ -2,7 +2,7 @@
  * pwmRotor.h
  *
  *  Created on: 7/05/2024
- *      Author: hrc48
+ *      Author: jwi182, hrc48
  */
 
 
@@ -18,11 +18,13 @@
 //ALT and YAW
 #define ADC_STEP_FOR_1V 1240
 #define ALT_STEP 124    // 1240/10  For 10% of 1V step
-#define ALT_LAND 12     // 1% of Max height
+#define ALT_LAND 24     // 2% of Max height
 #define ALT_TAKEOFF_5_PERCENT 62 //5% of max a
 #define YAW_STEP 19  //448 *15/360 degrees rounded
 #define YAW_LIMIT 6     // ~5 degrees
-#define GRAVITY 33
+#define YAW_ERROR_LIMIT 224
+#define YAW_REV 448
+#define GRAVITY 31
 #define KC 0.8
 
 
@@ -32,25 +34,27 @@
 
 // PID config
 //MAIN ROTOR
-#define KPM 1.5
-#define KIM 10
-#define KDM 0
+#define KPM 0.06 //Real rig
+//#define KPM 1.5
+#define KIM 0.08
+#define KDM 0.0001
+
 //TAIL ROTOR
-#define KPT 5
-#define KIT 0
+#define KPT 1.2 //Real rig
+//#define KPT 5
+#define KIT 0.01
 #define KDT 0
 
 
 // PWM configuration
 #define PWM_START_RATE_HZ  250
-#define PWM_RATE_STEP_HZ   50
-#define PWM_RATE_MIN_HZ    50
-#define PWM_RATE_MAX_HZ    400
 
-#define PWM_DUTY_MIN    5
-#define PWM_DUTY_MAX    95
-#define PWM_START_DUTY  5
-#define PWM_DUTY_STEP   5
+#define PWM_DUTY_MAIN_MIN   15
+#define PWM_DUTY_MAIN_MAX    80
+#define PWM_DUTY_TAIL_MIN    5
+#define PWM_DUTY_TAIL_MAX    85
+#define PID_TAIL_MAX 25
+
 
 #define PWM_DIVIDER_CODE   SYSCTL_PWMDIV_1
 #define PWM_DIVIDER        1
