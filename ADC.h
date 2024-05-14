@@ -24,11 +24,6 @@
 #define ADC_SEQUENCE_STEP        0    // Step index for ADC sequence
 
 
-//*****************************************************************************
-// Global variables
-//*****************************************************************************
-    // Counter for the interrupts
-
 
 #ifndef ADC_H_
 #define ADC_H_

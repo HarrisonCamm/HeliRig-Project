@@ -7,16 +7,18 @@
 
 #include "ADC.h"
 
-static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
+static circBuf_t g_inBuffer;        // Create buffer instance
 
 
 //*****************************************************************************
 //
-// The handler for the ADC conversion complete interrupt.
+// initADC: The handler for the ADC conversion complete interrupt.
 // Writes to the circular buffer.
 //
 //*****************************************************************************
 
+//Initialise ADC and GPIO
+//Function written by UCECE
 void
 initADC (void)
 {
@@ -53,6 +55,7 @@ initADC (void)
     // Enable interrupts for ADC0 sequence 3 (clears any outstanding interrupts)
     ADCIntEnable(ADC0_BASE, ADC_SEQUENCE_NUM);
 
+    //Initialise the circular buffer
     initCircBuf (&g_inBuffer, BUF_SIZE);
 }
 
@@ -62,8 +65,7 @@ initADC (void)
 // ADCIntHandler: Interrupt handler for ADC conversion completion on the Tiva
 // processor. Retrieves the ADC value from a completed conversion,
 // stores it in a circular buffer, and clears the ADC interrupt.
-//
-// ************************************************************
+//Function written by UCECE
 void
 ADCIntHandler(void)
 {
@@ -82,12 +84,8 @@ ADCIntHandler(void)
 }
 
 
-// ************************************************************
-//
 // Calculates the mean altitude from a circular buffer.
 // Assumes g_inBuffer is initialized and BUF_SIZE is defined.
-//
-// ************************************************************
 uint16_t getAltMean (void) {
     uint16_t i;
     uint32_t sum = 0;
