@@ -2,7 +2,7 @@
  * ADC.h
  *
  *  Created on: 21/03/2024
- *      Author: jwi182
+ *      Author: jwi182, hrc48
  */
 
 #include <stdint.h>
@@ -19,6 +19,9 @@
 #define BUF_SIZE 60
 #define SAMPLE_RATE_HZ 1000
 
+// ADC configuration
+#define ADC_SEQUENCE_NUM         3    // ADC sequence number
+#define ADC_SEQUENCE_STEP        0    // Step index for ADC sequence
 
 
 //*****************************************************************************

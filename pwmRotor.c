@@ -2,7 +2,7 @@
  * pwmRotor.c
  *
  *  Created on: 7/05/2024
- *      Author: hrc48
+ *      Author: hrc48, jwi182
  */
 
 #include <pwmRotor.h>
@@ -144,7 +144,7 @@ controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn) {
     if (!sweepEn) {
         if (error < -224) {
             error = 448 + error;
-        } else if (error > 224) {
+        } else if (error > YAW_ERROR_LIMIT_HIGH) {
             error = -448 + error;
         }
     }
@@ -200,8 +200,8 @@ void setAlt (int16_t setPoint) {
 void incYaw (void) {
     yawSetPoint += YAW_STEP;
     //special case
-    if (yawSetPoint > 224) {
-        yawSetPoint = -224 + (yawSetPoint - 224);
+    if (yawSetPoint > YAW_ERROR_LIMIT_HIGH) {
+        yawSetPoint = YAW_ERROR_LIMIT_LOW + (yawSetPoint - YAW_ERROR_LIMIT_HIGH);
     }
 }
 
@@ -209,8 +209,8 @@ void incYaw (void) {
 void decYaw (void) {
     yawSetPoint -= YAW_STEP;
     //special case
-    if (yawSetPoint < -224) {
-        yawSetPoint = 224 + (yawSetPoint + 224);
+    if (yawSetPoint < YAW_ERROR_LIMIT_LOW) {
+        yawSetPoint = YAW_ERROR_LIMIT_HIGH + (yawSetPoint + YAW_ERROR_LIMIT_HIGH);
     }
 }
 

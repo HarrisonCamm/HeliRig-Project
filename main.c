@@ -204,7 +204,5 @@ main(void)
             flagUART = false;
         }
 
-
-        //SysCtlDelay (SysCtlClockGet() / 100);  // Delay to prevent flickering
     }
 }

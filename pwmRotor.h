@@ -22,6 +22,8 @@
 #define ALT_TAKEOFF_5_PERCENT 62 //5% of max a
 #define YAW_STEP 19  //448 *15/360 degrees rounded
 #define YAW_LIMIT 6     // ~5 degrees
+#define YAW_ERROR_LIMIT_LOW -224
+#define YAW_ERROR_LIMIT_HIGH 224
 #define GRAVITY 33
 #define KC 0.8
 
@@ -32,11 +34,17 @@
 
 // PID config
 //MAIN ROTOR
-#define KPM 0.12
-#define KIM 0
+//#define KPM 0.12
+#define KPM 1.5
+
+
+
+//#define KIM 0
+#define KIM 10
 #define KDM 0
 //TAIL ROTOR
-#define KPT 0.5
+//#define KPT 0.5
+#define KPT 5
 #define KIT 0
 #define KDT 0
 

@@ -2,7 +2,7 @@
  * heliState.c
  *
  *  Created on: 12/05/2024
- *      Author: jwi182
+ *      Author: jwi182, hrc48
  */
 
 #include "heliState.h"

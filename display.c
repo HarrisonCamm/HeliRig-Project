@@ -2,7 +2,7 @@
  * Display.c
  *
  *  Created on: 21/03/2024
- *      Author: hrc48
+ *      Author: hrc48, jwi182
  */
 
 #include "display.h"
@@ -23,7 +23,7 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
         {
             bool negZero = false;
 
-            OLEDStringDraw ("Helicopter Stats", 0, 0);
+            OLEDStringDraw ("helicopter Stats", 0, 0);
 
             // Display ADC input as a height percentage
             usnprintf(lineString, sizeof(lineString), "Altitude: %3d%% ", altPercentage);
