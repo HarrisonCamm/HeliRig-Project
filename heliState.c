@@ -8,9 +8,9 @@
 #include "heliState.h"
 
 // Initialize state
-static HelicopterState heliState = LANDED;
-static bool landedLock = true;
-bool scanFlag = true;
+static HelicopterState heliState = LANDED; //Helicopters state instance
+static bool landedLock = true;  //Start locked in landed mode until Switch1 pulled LOW
+bool scanFlag = true;           //Start in yaw scanning mode to locate physical yaw reference point
 
 // Corresponding array of strings for helicopter state enum
 static char *HELISTATE_STRING[] = {
@@ -20,9 +20,9 @@ static char *HELISTATE_STRING[] = {
     "LANDING"
 };
 
-
+//Initialise SW1 to read input for changing heli state
 void initialiseSwitch (void) {
-    // Enable Peripheral Clocks for GPIO Port A (for PA7)
+    // Enable Peripheral for GPIO Port A (for PA7)
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 
     // Configure the GPIO pin for the mode slider switch (PA7)
@@ -31,17 +31,18 @@ void initialiseSwitch (void) {
 
 }
 
-
+//Initialise soft reset pin on BoosterPack SW2 PIN PA6
 void initialiseResetButton (void) {
     // Configure the GPIO pin for the virtual reset button
-    // Set the direction of the pin as input and enable the pull-up resistor.
+    // Set the direction of the pin as input and enable the pull-down resistor.
     GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_6);
     GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_6, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
 }
 
+
+//Initialise physical yaw reference input pin as GPIO interupt PIN PC4
 void initialiseYawRef (void) {
-    // Configure the GPIO pin for the virtual reset button
-    // Set the direction of the pin as input and enable the pull-up resistor.
+
     GPIOIntRegister(GPIO_PORTC_BASE, yawRefHandler);
 
     GPIOPinTypeGPIOInput (GPIO_PORTC_BASE, GPIO_PIN_4);
@@ -51,23 +52,29 @@ void initialiseYawRef (void) {
     GPIOIntEnable(GPIO_PORTC_BASE, GPIO_PIN_4);
 }
 
+
 bool readSwitchState(void) {
-    // Read the current state of the switch (HIGH = UP)
+    // Read the current state of SW1 switch for Heli state
     return GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_7);
 }
 
+//Pole soft reset pin on SW2 on PA6
 void readResetButtonState(void) {
     if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
         SysCtlReset();
     }
 }
 
+//Yaw reference interupt handler function, set current yaw and yaw setpoint to 0
 void yawRefHandler (void) {
+    //Scan flag on by default
     if (scanFlag) {
         setYawZero();
         setYaw(0);
         scanFlag = false;
     }
+
+    //Clear and disable interupt so it only occurs once on startup
     uint32_t status = GPIOIntStatus(GPIO_PORTC_BASE, true);
     GPIOIntClear(GPIO_PORTC_BASE, status);
     GPIOIntDisable(GPIO_PORTC_BASE, GPIO_PIN_4);
@@ -75,7 +82,7 @@ void yawRefHandler (void) {
 
 
 
-
+//Pole UP DN LF RT buttons for heli control
 void
 poleButtons(void) {
 
@@ -103,17 +110,18 @@ poleButtons(void) {
 }
 
 /********************************************************
- * Function to set the Helicopter state
+ * Function to set the Helicopter states
  ********************************************************/
 HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
     bool sw1High = readSwitchState();
 
     switch (heliState) {
         case LANDED:
+            //Unlock when switch is low
             if (!sw1High) {
                 landedLock = false;
             }
-
+            //Keep heli off when in LANDED
             if (!landedLock && sw1High) {
                 heliState = TAKING_OFF;
             } else {
@@ -132,6 +140,7 @@ HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
             break;
 
         case FLYING:
+            //Allow full user heli control after take off
             poleButtons();
             if (!sw1High) {
                 heliState = LANDING;
@@ -139,7 +148,7 @@ HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
             break;
 
         case LANDING:
-            // Deactivate motors to land
+            // Set yaw to 0 to land on yaw ref point
             setYaw(0);
             // Remain in LANDING until landing is complete
             if (landingComplete(currentYaw, currentAlt)) {
@@ -150,16 +159,15 @@ HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt) {
     return heliState;
 }
 
-char* getHeliState (void) {
-    return HELISTATE_STRING[heliState];
-}
-
+//Auto landing function, yaw set to zero then wait for altitude to decrease to 0-2% then turn off PWM
 bool landingComplete(int32_t yaw, uint16_t altitude) {
     // Logic to check if landing is complete
     uint16_t minAlt = getMIN_ALT();
 
+    //Wait for yaw to go to zero
     if (yaw >= -YAW_LIMIT && yaw < YAW_LIMIT) {
-        setAlt(minAlt);
+        setAlt(minAlt); //Set altitude to 0%
+        //Wait for altitude to go <2%
         if (altitude <= minAlt && altitude >= minAlt - ALT_LAND) {
             return true;
         }
@@ -173,15 +181,21 @@ bool landingComplete(int32_t yaw, uint16_t altitude) {
     }
 }
 
+
+//Auto take off to 5% then rotate clockwise a full rev to find yaw reference point
 bool takeoffComplete (int32_t yaw, uint16_t altitude) {
     uint16_t minAlt = getMIN_ALT();
 
     setAlt(minAlt - ALT_TAKEOFF_5_PERCENT);
+    //Rise to >3% 
     if (altitude < minAlt - ALT_TAKEOFF_5_PERCENT + ALT_LAND) {
+        //scanFlag changed by yaw ref point interupt
+        //Wait to pass over yaw ref point
         if (!scanFlag) {
             return true;
         }
         else {
+            //Do full revolution
             setYaw(223);
             return false;
         }
@@ -193,3 +207,7 @@ bool takeoffComplete (int32_t yaw, uint16_t altitude) {
 
 }
 
+//Return heliState as a string for printing
+char* getHeliState (void) {
+    return HELISTATE_STRING[heliState];
+}

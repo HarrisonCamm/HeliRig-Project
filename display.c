@@ -1,5 +1,5 @@
 /*
- * Display.c
+ * display.c
  *
  *  Created on: 21/03/2024
  *      Author: hrc48, jwi182
@@ -7,7 +7,7 @@
 
 #include "display.h"
 
-
+//Refresh OLED display
 void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enum DisplayMode displayCycle) {
 
     // Get Altitude as a percentage
@@ -16,13 +16,16 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
     // Get yaw as a degree
     int32_t yawDegree = getYawDegree(currentYaw);
 
+    //Create string instance
     char lineString[17]; // 16 characters across the display
 
     switch (displayCycle) {
         case PROCESSED:
         {
+            //Special case when 0/100=0 and not -0 when Deg = -0.8
             bool negZero = false;
 
+            //Title
             OLEDStringDraw ("helicopter Stats", 0, 0);
 
             // Display ADC input as a height percentage
@@ -46,6 +49,7 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
                 //Display yaw in degrees to 2dp
                 usnprintf(lineString, sizeof(lineString), "Yaw(deg):%d.%d   ", yawInt, yawDecimal);
             }
+            //Clear display line
             OLEDStringDraw (lineString, 0, 2);
 
             negZero = false;
@@ -64,7 +68,8 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
             break;
         }
         case DISPLAY_OFF:
-        {
+        {   
+            //Blank display
             OrbitOledClear();
             break;
         }
@@ -75,6 +80,8 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
 
 }
 
+
+//Convert raw altitude ADC value to a percentage of maximum altitude based off 1 volt between MIN and MAX
 int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
 {
     // Calculate the altitude as a percentage (integer math)
@@ -85,8 +92,9 @@ int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
 }
 
 int32_t getYawDegree(int32_t currentYaw)
-{
-    return (currentYaw * DEG_REV * SCALE_BY_100) / YAW_STEPS; // Scale by 100 before division to include 2 decimal point for modulo division
+{   
+    // Scale by 100 before division to include 2 decimal point for modulo division
+    return (currentYaw * DEG_REV * SCALE_BY_100) / YAW_STEPS; 
 }
 
 

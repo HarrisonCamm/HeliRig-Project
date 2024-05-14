@@ -2,7 +2,7 @@
  * pwmRotor.h
  *
  *  Created on: 7/05/2024
- *      Author: hrc48
+ *      Author: jwi182, hrc48
  */
 
 

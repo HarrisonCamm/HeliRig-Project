@@ -1,8 +1,8 @@
 /*
- * Display.c
+ * quadrature.c
  *
  *  Created on: 21/03/2024
- *      Author: hrc48
+ *      Author: jwi182, hrc48
  */
 
 #include "quadrature.h"

@@ -45,8 +45,6 @@ void poleButtons(void);
 
 HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt);
 
-
-
 char* getHeliState (void);
 
 bool landingComplete(int32_t yaw, uint16_t altitude);
