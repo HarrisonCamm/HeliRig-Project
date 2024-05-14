@@ -72,10 +72,19 @@ initialisePWM (void)
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }
 
+<<<<<<< HEAD
+
+void 
+initAltLimits (uint16_t initLandedADC) {
+    //Initialise min and max ADC heights
+    MIN_ALT = initLandedADC;
+    MAX_ALT = initLandedADC - ADC_STEP_FOR_1V;
+=======
 //Initialise min and max ADC heights
 void initAltLimits (uint16_t initLandedADC) {
     min_alt = initLandedADC;
     max_alt = initLandedADC - ADC_STEP_FOR_1V;
+>>>>>>> da968cff1263d47b382572629d316e42024cdc03
     altSetPoint = initLandedADC;
 }
 
@@ -179,22 +188,43 @@ controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn) {
     return control;
 }
 
+<<<<<<< HEAD
+
+void 
+incAlt (void) {
+=======
 //Increase altitude setpoint
 void incAlt (void) {
+>>>>>>> da968cff1263d47b382572629d316e42024cdc03
     altSetPoint -= ALT_STEP;
     if (altSetPoint < max_alt){
         altSetPoint = max_alt;
     }
 }
 
+<<<<<<< HEAD
+
+void 
+decAlt (void) {
+=======
 //Decrease altitude setpoint
 void decAlt (void) {
+>>>>>>> da968cff1263d47b382572629d316e42024cdc03
     altSetPoint += ALT_STEP;
     if (altSetPoint > min_alt - ALT_STEP){
         altSetPoint = min_alt - ALT_STEP; //Set min button altitude to 10%
     }
 }
 
+<<<<<<< HEAD
+void 
+setAlt (int16_t setPoint) {
+    altSetPoint = setPoint;
+}
+
+void 
+incYaw (void) {
+=======
 //Set altitude setpoint
 void setAlt (int16_t setPoint) {
     altSetPoint = setPoint;
@@ -202,6 +232,7 @@ void setAlt (int16_t setPoint) {
 
 //Increase yaw setpoint
 void incYaw (void) {
+>>>>>>> da968cff1263d47b382572629d316e42024cdc03
     yawSetPoint += YAW_STEP;
     //special case - wrap around at 180 deg
     if (yawSetPoint > YAW_ERROR_LIMIT) {
@@ -209,8 +240,14 @@ void incYaw (void) {
     }
 }
 
+<<<<<<< HEAD
+
+void 
+decYaw (void) {
+=======
 //Decrease yaw setpoint
 void decYaw (void) {
+>>>>>>> da968cff1263d47b382572629d316e42024cdc03
     yawSetPoint -= YAW_STEP;
     //special case - wrap around at 180 deg
     if (yawSetPoint < -YAW_ERROR_LIMIT) {
@@ -218,6 +255,32 @@ void decYaw (void) {
     }
 }
 
+<<<<<<< HEAD
+void 
+setYaw (int16_t setPoint) {
+    yawSetPoint = setPoint;
+}
+
+int32_t 
+getAltSet (void) {
+    return altSetPoint;
+}
+
+int32_t 
+getYawSet (void) {
+    return yawSetPoint;
+}
+
+uint16_t 
+getMIN_ALT (void) {
+    return MIN_ALT;
+}
+
+
+uint16_t 
+getMAX_ALT (void) {
+    return MAX_ALT;
+=======
 //Set yaw setpoint
 void setYaw (int16_t setPoint) {
     yawSetPoint = setPoint;
@@ -241,18 +304,21 @@ uint16_t getmin_alt (void) {
 //Get max alt setpoint
 uint16_t getmax_alt (void) {
     return max_alt;
+>>>>>>> da968cff1263d47b382572629d316e42024cdc03
 }
 
 
 
 
 
-void PWM_ON (void) {
+void 
+PWM_ON (void) {
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
 }
 
-void PWM_OFF (void) {
+void 
+PWM_OFF (void) {
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, false);
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }
