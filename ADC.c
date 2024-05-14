@@ -8,7 +8,7 @@
 #include "ADC.h"
 
 static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
-//static uint32_t g_ulSampCnt;  //Unused at time being
+
 
 //*****************************************************************************
 //
@@ -57,6 +57,13 @@ initADC (void)
 }
 
 
+// ************************************************************
+//
+// Interrupt handler for ADC conversion completion on the Tiva
+// processor. Retrieves the ADC value from a completed conversion,
+// stores it in a circular buffer, and clears the ADC interrupt.
+//
+// ************************************************************
 void
 ADCIntHandler(void)
 {
@@ -75,6 +82,12 @@ ADCIntHandler(void)
 }
 
 
+// ************************************************************
+//
+// Calculates the mean altitude from a circular buffer.
+// Assumes g_inBuffer is initialized and BUF_SIZE is defined.
+//
+// ************************************************************
 uint16_t getAltMean (void) {
     uint16_t i;
     uint32_t sum = 0;
