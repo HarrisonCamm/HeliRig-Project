@@ -158,6 +158,7 @@ main(void)
 
     while (1)
     {
+        readResetButtonState();
         //Flag Controller
         if (flagController) {
             //Update current sensor values
@@ -172,7 +173,7 @@ main(void)
             flagController = false;
         }
         if (flagButtons) {
-            readResetButtonState();
+
             heliState = updateHelicopterState(currentYaw, currentAlt);
             if (heliState == TAKING_OFF) {
                 sweepEn = true;

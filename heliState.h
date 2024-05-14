@@ -39,7 +39,7 @@ void readResetButtonState(void);
 
 bool readSwitchState(void);
 
-bool readYawRef (void);
+void yawRefHandler (void);
 
 void poleButtons(void);
 
