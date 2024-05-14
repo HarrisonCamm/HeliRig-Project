@@ -28,10 +28,19 @@
 #ifndef ADC_H_
 #define ADC_H_
 
+
+
 void ADCIntHandler(void);
 
+//*****************************************************************************
+// initADC: The handler for the ADC conversion complete interrupt.
+// Writes to the circular buffer.
+//*****************************************************************************
 void initADC (void);
 
+// ************************************************************
+// getAltMean: Calculates the mean altitude from a circular buffer.
+// Assumes g_inBuffer is initialized and BUF_SIZE is defined.
 uint16_t getAltMean (void);
 
 void SysTickIntHandler(void);

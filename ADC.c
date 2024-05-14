@@ -61,7 +61,6 @@ initADC (void)
 
 
 // ************************************************************
-//
 // ADCIntHandler: Interrupt handler for ADC conversion completion on the Tiva
 // processor. Retrieves the ADC value from a completed conversion,
 // stores it in a circular buffer, and clears the ADC interrupt.
@@ -83,10 +82,11 @@ ADCIntHandler(void)
     ADCIntClear(ADC0_BASE, ADC_SEQUENCE_NUM);
 }
 
-
-// Calculates the mean altitude from a circular buffer.
+// ************************************************************
+// getAltMean: Calculates the mean altitude from a circular buffer.
 // Assumes g_inBuffer is initialized and BUF_SIZE is defined.
-uint16_t getAltMean (void) {
+uint16_t 
+getAltMean (void) {
     uint16_t i;
     uint32_t sum = 0;
     for (i = 0; i < BUF_SIZE; i++) {

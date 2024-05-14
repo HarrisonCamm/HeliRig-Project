@@ -72,7 +72,8 @@ initialisePWM (void)
 }
 
 
-void initAltLimits (uint16_t initLandedADC) {
+void 
+initAltLimits (uint16_t initLandedADC) {
     //Initialise min and max ADC heights
     MIN_ALT = initLandedADC;
     MAX_ALT = initLandedADC - ADC_STEP_FOR_1V;
@@ -179,7 +180,8 @@ controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn) {
 }
 
 
-void incAlt (void) {
+void 
+incAlt (void) {
     altSetPoint -= ALT_STEP;
     if (altSetPoint < MAX_ALT){
         altSetPoint = MAX_ALT;
@@ -187,18 +189,21 @@ void incAlt (void) {
 }
 
 
-void decAlt (void) {
+void 
+decAlt (void) {
     altSetPoint += ALT_STEP;
     if (altSetPoint > MIN_ALT - ALT_STEP){
         altSetPoint = MIN_ALT - ALT_STEP; //Set min button altitude to 10%
     }
 }
 
-void setAlt (int16_t setPoint) {
+void 
+setAlt (int16_t setPoint) {
     altSetPoint = setPoint;
 }
 
-void incYaw (void) {
+void 
+incYaw (void) {
     yawSetPoint += YAW_STEP;
     //special case
     if (yawSetPoint > YAW_ERROR_LIMIT) {
@@ -207,7 +212,8 @@ void incYaw (void) {
 }
 
 
-void decYaw (void) {
+void 
+decYaw (void) {
     yawSetPoint -= YAW_STEP;
     //special case
     if (yawSetPoint < -YAW_ERROR_LIMIT) {
@@ -215,24 +221,29 @@ void decYaw (void) {
     }
 }
 
-void setYaw (int16_t setPoint) {
+void 
+setYaw (int16_t setPoint) {
     yawSetPoint = setPoint;
 }
 
-int32_t getAltSet (void) {
+int32_t 
+getAltSet (void) {
     return altSetPoint;
 }
 
-int32_t getYawSet (void) {
+int32_t 
+getYawSet (void) {
     return yawSetPoint;
 }
 
-uint16_t getMIN_ALT (void) {
+uint16_t 
+getMIN_ALT (void) {
     return MIN_ALT;
 }
 
 
-uint16_t getMAX_ALT (void) {
+uint16_t 
+getMAX_ALT (void) {
     return MAX_ALT;
 }
 
@@ -240,12 +251,14 @@ uint16_t getMAX_ALT (void) {
 
 
 
-void PWM_ON (void) {
+void 
+PWM_ON (void) {
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, true);
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, true);
 }
 
-void PWM_OFF (void) {
+void 
+PWM_OFF (void) {
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, false);
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, false);
 }

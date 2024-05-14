@@ -7,8 +7,13 @@
 
 #include "display.h"
 
-//Refresh OLED display
-void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enum DisplayMode displayCycle) {
+
+// *******************************************************
+// displayWrite: Updates the OLED display with altitude and yaw information based on the current display mode.
+// This function handles the formatting and output of altitude and yaw data onto an OLED display.
+// The display mode can be either PROCESSED, RAW, or DISPLAY_OFF, which affects what and how information is displayed.
+void 
+displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enum DisplayMode displayCycle) {
 
     // Get Altitude as a percentage
     int32_t altPercentage = getAltPercent(baseAlt, currentAlt);
@@ -80,9 +85,11 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
 
 }
 
-
-//Convert raw altitude ADC value to a percentage of maximum altitude based off 1 volt between MIN and MAX
-int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
+// *******************************************************
+//getAltPercent: Convert raw altitude ADC value to a percentage of maximum altitude based
+// off 1 volt between MIN and MAX
+int32_t 
+getAltPercent (uint16_t baseAltitude, int32_t altitude)
 {
     // Calculate the altitude as a percentage (integer math)
     int32_t delta = baseAltitude - altitude; // Difference from the baseline
@@ -91,9 +98,11 @@ int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
     return altPercentage;
 }
 
-int32_t getYawDegree(int32_t currentYaw)
+// *******************************************************
+// getYawDegree: Scale by 100 before division to include 2 decimal point for modulo division
+int32_t 
+getYawDegree(int32_t currentYaw)
 {   
-    // Scale by 100 before division to include 2 decimal point for modulo division
     return (currentYaw * DEG_REV * SCALE_BY_100) / YAW_STEPS; 
 }
 
