@@ -40,7 +40,7 @@ initialisePWM (void)
     uint32_t ui32Period = sysClock / PWM_DIVIDER / PWM_MAIN_FREQ;
 
     PWMGenPeriodSet(PWM_MAIN_BASE, PWM_MAIN_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM, ui32Period * PWM_START_DUTY / 100);
+    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM, 0);
 
     PWMGenEnable(PWM_MAIN_BASE, PWM_MAIN_GEN);
 
@@ -62,7 +62,7 @@ initialisePWM (void)
     uint32_t ui32PeriodTail = sysClock / PWM_DIVIDER / PWM_TAIL_FREQ;
 
     PWMGenPeriodSet(PWM_TAIL_BASE, PWM_TAIL_GEN, ui32PeriodTail);
-    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM, ui32PeriodTail * PWM_START_DUTY / 100);
+    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM, 0);
 
 
     PWMGenEnable(PWM_TAIL_BASE, PWM_TAIL_GEN);
@@ -121,10 +121,10 @@ controllerMain (uint16_t sensor) {
 
     int32_t control = GRAVITY - P - (dI + I) - D;
 
-    if (control > PWM_DUTY_MAX) {
-        control = PWM_DUTY_MAX;
-    } else if (control < 15) {
-        control = 15;
+    if (control > PWM_DUTY_MAIN_MAX) {
+        control = PWM_DUTY_MAIN_MAX;
+    } else if (control < PWM_DUTY_MAIN_MIN) {
+        control = PWM_DUTY_MAIN_MIN;
     } else {
         I = I + dI;
     }
@@ -142,10 +142,10 @@ controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn) {
     int16_t error = yawSetPoint - sensor;
 
     if (!sweepEn) {
-        if (error < -224) {
-            error = 448 + error;
-        } else if (error > YAW_ERROR_LIMIT_HIGH) {
-            error = -448 + error;
+        if (error < -YAW_ERROR_LIMIT) {
+            error = YAW_REV + error;
+        } else if (error > YAW_ERROR_LIMIT) {
+            error = -YAW_REV + error;
         }
     }
 
@@ -156,19 +156,20 @@ controllerTail (int32_t mainControl, int16_t sensor, bool sweepEn) {
     float P = KPT * error;
     float I = KIT * error * DELTA_T;
     float D = KDT * (prevSensor - sensor) / DELTA_T;
+    float PID_TAIL = P + I + D;
 
-    if (P > 30) {
-        P = 30;
+    if (PID_TAIL > PID_TAIL_MAX) {
+        PID_TAIL = PID_TAIL_MAX;
     }
 
     float coupling = mainControl * KC;
 
-    int32_t control = P + (dI + I) + D + coupling;
+    int32_t control = PID_TAIL + coupling;
 
-    if (control > PWM_DUTY_MAX) {
-        control = PWM_DUTY_MAX;
-    } else if (control < 10) {
-        control = 10;
+    if (control > PWM_DUTY_TAIL_MAX) {
+        control = PWM_DUTY_TAIL_MAX;
+    } else if (control < PWM_DUTY_TAIL_MIN) {
+        control = PWM_DUTY_TAIL_MIN;
     } else {
         I = I + dI;
     }
@@ -200,8 +201,8 @@ void setAlt (int16_t setPoint) {
 void incYaw (void) {
     yawSetPoint += YAW_STEP;
     //special case
-    if (yawSetPoint > YAW_ERROR_LIMIT_HIGH) {
-        yawSetPoint = YAW_ERROR_LIMIT_LOW + (yawSetPoint - YAW_ERROR_LIMIT_HIGH);
+    if (yawSetPoint > YAW_ERROR_LIMIT) {
+        yawSetPoint = -YAW_ERROR_LIMIT + (yawSetPoint - YAW_ERROR_LIMIT);
     }
 }
 
@@ -209,8 +210,8 @@ void incYaw (void) {
 void decYaw (void) {
     yawSetPoint -= YAW_STEP;
     //special case
-    if (yawSetPoint < YAW_ERROR_LIMIT_LOW) {
-        yawSetPoint = YAW_ERROR_LIMIT_HIGH + (yawSetPoint + YAW_ERROR_LIMIT_HIGH);
+    if (yawSetPoint < -YAW_ERROR_LIMIT) {
+        yawSetPoint = YAW_ERROR_LIMIT + (yawSetPoint + YAW_ERROR_LIMIT);
     }
 }
 

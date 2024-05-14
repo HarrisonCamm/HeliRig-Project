@@ -198,8 +198,15 @@ main(void)
             char *heliString = getHeliState();
 
             //Update UART string
-            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty, heliString);
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d  \r\n", actualAlt, desireAlt);
             UARTSend (statusStr);
+
+            usprintf (statusStr, "Yaw(Actual/Set) %d/%d  \r\n", actualYaw, desireYaw);
+            UARTSend (statusStr);
+
+            usprintf (statusStr, "Main %% %d | Tail %% %d | Mode %s \r\n", mainDuty, tailDuty, heliString);
+            UARTSend (statusStr);
+
 
             flagUART = false;
         }
