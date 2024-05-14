@@ -32,11 +32,11 @@
 
 // PID config
 //MAIN ROTOR
-#define KPM 0.12
-#define KIM 0
+#define KPM 1.5
+#define KIM 10
 #define KDM 0
 //TAIL ROTOR
-#define KPT 0.5
+#define KPT 5
 #define KIT 0
 #define KDT 0
 
