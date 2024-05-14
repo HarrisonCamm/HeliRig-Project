@@ -36,7 +36,7 @@ void initialiseResetButton (void) {
     // Configure the GPIO pin for the virtual reset button
     // Set the direction of the pin as input and enable the pull-up resistor.
     GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_6);
-    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_6, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_6, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
 }
 
 void initialiseYawRef (void) {
@@ -46,7 +46,7 @@ void initialiseYawRef (void) {
 
     GPIOPinTypeGPIOInput (GPIO_PORTC_BASE, GPIO_PIN_4);
 
-    GPIOIntTypeSet(GPIO_PORTC_BASE, GPIO_PIN_4, GPIO_FALLING_EDGE);
+    GPIOIntTypeSet(GPIO_PORTC_BASE, GPIO_PIN_4, GPIO_LOW_LEVEL);
 
     GPIOIntEnable(GPIO_PORTC_BASE, GPIO_PIN_4);
 }
@@ -57,7 +57,7 @@ bool readSwitchState(void) {
 }
 
 void readResetButtonState(void) {
-    if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 1) {
+    if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_6) == 0) {
         SysCtlReset();
     }
 }
@@ -70,6 +70,7 @@ void yawRefHandler (void) {
     }
     uint32_t status = GPIOIntStatus(GPIO_PORTC_BASE, true);
     GPIOIntClear(GPIO_PORTC_BASE, status);
+    GPIOIntDisable(GPIO_PORTC_BASE, GPIO_PIN_4);
 }
 
 
@@ -177,11 +178,11 @@ bool takeoffComplete (int32_t yaw, uint16_t altitude) {
 
     setAlt(minAlt - ALT_TAKEOFF_5_PERCENT);
     if (altitude < minAlt - ALT_TAKEOFF_5_PERCENT + ALT_LAND) {
-        setYaw(223);
         if (!scanFlag) {
             return true;
         }
         else {
+            setYaw(223);
             return false;
         }
 
