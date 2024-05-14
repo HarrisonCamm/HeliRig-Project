@@ -141,6 +141,10 @@ char* getHeliState (void) {
     return HELISTATE_STRING[heliState];
 }
 
+
+/********************************************************
+ * Function to set the Helicopter state
+ ********************************************************/
 bool landingComplete(int32_t yaw, uint16_t altitude) {
     // Logic to check if landing is complete
     uint16_t minAlt = getMIN_ALT();

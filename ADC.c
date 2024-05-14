@@ -59,7 +59,7 @@ initADC (void)
 
 // ************************************************************
 //
-// Interrupt handler for ADC conversion completion on the Tiva
+// ADCIntHandler: Interrupt handler for ADC conversion completion on the Tiva
 // processor. Retrieves the ADC value from a completed conversion,
 // stores it in a circular buffer, and clears the ADC interrupt.
 //

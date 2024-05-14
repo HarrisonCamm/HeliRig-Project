@@ -2,7 +2,7 @@
  * uart.c
  *
  *  Created on: 12/05/2024
- *      Author: jwi182
+ *      Author: jwi182, hrc48
  */
 #include "uart.h"
 
@@ -25,7 +25,10 @@ initialiseUSB_UART (void)
     GPIOPinTypeUART(UART_USB_GPIO_BASE, UART_USB_GPIO_PINS);
     GPIOPinConfigure (GPIO_PA0_U0RX);
     GPIOPinConfigure (GPIO_PA1_U0TX);
-
+    //
+    // Set up the UART with the system clock rate, a predefined baud rate, and standard settings 
+    // of 8 data bits, one stop bit, and no parity for basic serial communication.
+    //
     UARTConfigSetExpClk(UART_USB_BASE, SysCtlClockGet(), BAUD_RATE,
             UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
             UART_CONFIG_PAR_NONE);
