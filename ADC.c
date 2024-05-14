@@ -82,29 +82,9 @@ uint16_t getAltMean (void) {
         sum += readCircBuf(&g_inBuffer);
     }
     uint16_t currentMean = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-//    uint16_t currentMean = (sum + BUF_SIZE / 2) / BUF_SIZE;
     return currentMean;
 }
 
-
-
-
-//*****************************************************************************
-//
-// The interrupt handler for the for SysTick interrupt.
-//
-//*****************************************************************************
-//void
-//SysTickIntHandler(void)
-//{
-//    //
-//    // Initiate a conversion
-//    //
-//    ADCProcessorTrigger(ADC0_BASE, 3);
-//    g_ulSampCnt++;
-//}
-//
-//
 
 
 
