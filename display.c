@@ -1,14 +1,19 @@
 /*
- * Display.c
+ * display.c
  *
  *  Created on: 21/03/2024
- *      Author: hrc48
+ *      Author: hrc48, jwi182
  */
 
 #include "display.h"
 
 
-void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enum DisplayMode displayCycle) {
+// *******************************************************
+// displayWrite: Updates the OLED display with altitude and yaw information based on the current display mode.
+// This function handles the formatting and output of altitude and yaw data onto an OLED display.
+// The display mode can be either PROCESSED, RAW, or DISPLAY_OFF, which affects what and how information is displayed.
+void 
+displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enum DisplayMode displayCycle) {
 
     // Get Altitude as a percentage
     int32_t altPercentage = getAltPercent(baseAlt, currentAlt);
@@ -16,14 +21,17 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
     // Get yaw as a degree
     int32_t yawDegree = getYawDegree(currentYaw);
 
+    //Create string instance
     char lineString[17]; // 16 characters across the display
 
     switch (displayCycle) {
         case PROCESSED:
         {
+            //Special case when 0/100=0 and not -0 when Deg = -0.8
             bool negZero = false;
 
-            OLEDStringDraw ("Helicopter Stats", 0, 0);
+            //Title
+            OLEDStringDraw ("helicopter Stats", 0, 0);
 
             // Display ADC input as a height percentage
             usnprintf(lineString, sizeof(lineString), "Altitude: %3d%% ", altPercentage);
@@ -46,6 +54,7 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
                 //Display yaw in degrees to 2dp
                 usnprintf(lineString, sizeof(lineString), "Yaw(deg):%d.%d   ", yawInt, yawDecimal);
             }
+            //Clear display line
             OLEDStringDraw (lineString, 0, 2);
 
             negZero = false;
@@ -64,7 +73,8 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
             break;
         }
         case DISPLAY_OFF:
-        {
+        {   
+            //Blank display
             OrbitOledClear();
             break;
         }
@@ -75,7 +85,11 @@ void displayWrite(uint16_t baseAlt, uint16_t currentAlt, int32_t currentYaw, enu
 
 }
 
-int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
+// *******************************************************
+//getAltPercent: Convert raw altitude ADC value to a percentage of maximum altitude based
+// off 1 volt between MIN and MAX
+int32_t 
+getAltPercent (uint16_t baseAltitude, int32_t altitude)
 {
     // Calculate the altitude as a percentage (integer math)
     int32_t delta = baseAltitude - altitude; // Difference from the baseline
@@ -84,9 +98,12 @@ int32_t getAltPercent (uint16_t baseAltitude, int32_t altitude)
     return altPercentage;
 }
 
-int32_t getYawDegree(int32_t currentYaw)
-{
-    return (currentYaw * DEG_REV * SCALE_BY_100) / YAW_STEPS; // Scale by 100 before division to include 2 decimal point for modulo division
+// *******************************************************
+// getYawDegree: Scale by 100 before division to include 2 decimal point for modulo division
+int32_t 
+getYawDegree(int32_t currentYaw)
+{   
+    return (currentYaw * DEG_REV * SCALE_BY_100) / YAW_STEPS; 
 }
 
 

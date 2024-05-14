@@ -1,29 +1,39 @@
 /*
- * Display.c
+ * quadrature.c
  *
  *  Created on: 21/03/2024
- *      Author: hrc48
+ *      Author: jwi182, hrc48
  */
 
 #include "quadrature.h"
 
-static volatile int32_t yawPosition = -223;
+static volatile int32_t yawPosition = INITIAL_YAW_POSITION;
 
 
-void initQuad (void)
+
+// *******************************************************
+// initQuad: Initialise the hardware and interrupt settings for a quadcopter's yaw control.
+// This function configures GPIO ports and pins and registers interrupt handlers
+// specific to the yaw movement controls of the quadcopter.
+void initQuad(void)
 {
-    SysCtlPeripheralEnable (SYSCTL_PERIPH_GPIOB);
+    // Enable the peripheral clock for GPIO port B, which is used for yaw control.
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 
+    // Register the interrupt handler function 'GPIOYawHandler' for GPIO port B.
     GPIOIntRegister(GPIO_PORTB_BASE, GPIOYawHandler);
 
-    GPIOPinTypeGPIOInput (GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+    // Configure pins 0 and 1 on GPIO port B as input pins, to be used for reading yaw control signals.
+    GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
+    // Set the interrupt type for pins 0 and 1 on GPIO port B to trigger on both rising and falling edges,
+    // which allows detection of all changes in the yaw control signal.
     GPIOIntTypeSet(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1, GPIO_BOTH_EDGES);
 
+    // Enable interrupts on pins 0 and 1 on GPIO port B, allowing the system to respond to yaw control signals.
     GPIOIntEnable(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
-
-
 }
+
 
 void setYawZero (void) {
     yawPosition = 0;

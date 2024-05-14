@@ -1,5 +1,5 @@
 /*
- * Display.h
+ * display.h
  *
  *  Created on: 21/03/2024
  *      Author: hrc48
@@ -21,11 +21,14 @@
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "OrbitOLED/lib_OrbitOled/OrbitOled.h"
 
+
+//Global constants
 #define ADC_STEP_FOR_1V 1240
 #define YAW_STEPS 448
 #define DEG_REV 360
 #define SCALE_BY_100 100
 
+//Display mode enum
 enum DisplayMode { PROCESSED, RAW, DISPLAY_OFF, CYCLE_BACK};
 
 #ifndef DISPLAY_H_

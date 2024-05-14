@@ -2,7 +2,7 @@
  * uart.h
  *
  *  Created on: 12/05/2024
- *      Author: jwi182
+ *      Author: jwi182, hrc48
  */
 
 #include <stdint.h>
@@ -31,6 +31,7 @@
 #define UART_USB_GPIO_PIN_TX    GPIO_PIN_1
 #define UART_USB_GPIO_PINS      UART_USB_GPIO_PIN_RX | UART_USB_GPIO_PIN_TX
 
+#define MAX_STR_LEN 105
 
 
 #ifndef UART_H_

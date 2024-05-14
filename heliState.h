@@ -2,7 +2,7 @@
  * heliState.h
  *
  *  Created on: 12/05/2024
- *      Author: jwi182
+ *      Author: jwi182, hrc48
  */
 
 #include <stdbool.h>
@@ -39,13 +39,11 @@ void readResetButtonState(void);
 
 bool readSwitchState(void);
 
-bool readYawRef (void);
+void yawRefHandler (void);
 
 void poleButtons(void);
 
 HelicopterState updateHelicopterState(int32_t currentYaw, uint16_t currentAlt);
-
-
 
 char* getHeliState (void);
 

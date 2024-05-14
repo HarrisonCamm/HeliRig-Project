@@ -1,5 +1,5 @@
 /*
- * milestone1.c
+ * main.c
  *
  *  Created on: 21/03/2024
  *      Authors: jwi182, hrc48
@@ -39,11 +39,10 @@ static volatile bool flagUART = false;
 //********************************************************
 // Global variables
 //********************************************************
-#define MAX_STR_LEN 105
 
 char statusStr[MAX_STR_LEN + 1];
 
-#define CONTROL_PERIOD 4    //Corrosponds to 1000Hz
+#define CONTROL_PERIOD 4    //Corrosponds to 250Hz
 #define BUTTON_PERIOD 10    //Corrosponds to 100Hz
 #define DISPLAY_PERIOD 15   //Corrosponds to 66.67Hz
 #define UART_PERIOD 200     //Corrosponds to 5Hz
@@ -92,6 +91,8 @@ SysTickIntHandler(void)
     //
     ADCProcessorTrigger(ADC0_BASE, 3);
 
+
+    //Set task flags based on desired task frequency
     if (controllerCounter >= CONTROL_PERIOD) {
         flagController = true;
         controllerCounter = 0;
@@ -112,7 +113,7 @@ SysTickIntHandler(void)
         uartCounter = 0;
     }
 
-
+    //Increment task timers
     controllerCounter++;
     buttonsCounter++;
     displayCounter++;
@@ -128,10 +129,12 @@ main(void)
     uint16_t initLandedADC;
     int32_t mainDuty;
     int32_t tailDuty;
-    enum DisplayMode displayCycle = PROCESSED;
+    enum DisplayMode displayCycle = PROCESSED; //Display altitude percentage and yaw degrees
     HelicopterState heliState = LANDED;
-    bool sweepEn = 0;
+    bool sweepEn = 0;   //Sweep yaw to find yaw ref point
 
+
+    //Initialise all functions
     initClock ();
     initButtons();
     initADC ();
@@ -144,21 +147,25 @@ main(void)
     initialiseYawRef();
 
 
-    //
     // Enable interrupts to the processor.
     IntMasterEnable();
 
     SysCtlDelay (SysCtlClockGet() / START_DELAY);  // ~200ms delay for buffer to populate
 
     
-    // Calculate and display the rounded mean of the buffer contents
+    // Grab initial altitude ADC input to use for percentage converting
     initLandedADC = getAltMean();
 
+    //Set inital Max and Min altitudes 
     initAltLimits(initLandedADC);
 
     while (1)
     {
-        //Flag Controller
+        //Pole heli soft reset button
+        readResetButtonState();
+
+        //Run main tasks
+        //Run PID controller and set PWM levels
         if (flagController) {
             //Update current sensor values
             currentAlt = getAltMean();
@@ -171,8 +178,10 @@ main(void)
 
             flagController = false;
         }
+
+        //Pole buttons and state switch and update heli state
         if (flagButtons) {
-            readResetButtonState();
+
             heliState = updateHelicopterState(currentYaw, currentAlt);
             if (heliState == TAKING_OFF) {
                 sweepEn = true;
@@ -181,30 +190,39 @@ main(void)
             }
             flagButtons = false;
         }
+
+        //Refresh BoosterPack OLED display
         if (flagDisplay) {
-            // Refresh the display
             displayWrite(initLandedADC, currentAlt, currentYaw, displayCycle);
             flagDisplay = false;
         }
 
+        //Send new Heli stats to PC via UART
         if (flagUART) {
-
+            
+            //Convert raw values to nice values for UART
             int32_t actualAlt = getAltPercent(initLandedADC, currentAlt);
             int32_t desireAlt = getAltPercent(initLandedADC, getAltSet());
 
             int32_t actualYaw = getYawDegree(currentYaw) / SCALE_BY_100;
             int32_t desireYaw = getYawDegree(getYawSet()) / SCALE_BY_100;
 
+            //Grab current Heli state as a string
             char *heliString = getHeliState();
 
             //Update UART string
-            usprintf (statusStr, "Alt(Actual/Set) %d/%d | Yaw(Actual/Set) %d/%d | Main Duty %d | Tail Duty %d | Mode %s \r\n", actualAlt, desireAlt, actualYaw, desireYaw, mainDuty, tailDuty, heliString);
+            usprintf (statusStr, "Alt(Actual/Set) %d/%d  \r\n", actualAlt, desireAlt);
             UARTSend (statusStr);
+
+            usprintf (statusStr, "Yaw(Actual/Set) %d/%d  \r\n", actualYaw, desireYaw);
+            UARTSend (statusStr);
+
+            usprintf (statusStr, "Main %% %d | Tail %% %d | Mode %s \r\n", mainDuty, tailDuty, heliString);
+            UARTSend (statusStr);
+
 
             flagUART = false;
         }
 
-
-        //SysCtlDelay (SysCtlClockGet() / 100);  // Delay to prevent flickering
     }
 }
